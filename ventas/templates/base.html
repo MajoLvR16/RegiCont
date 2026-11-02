@@ -19,21 +19,21 @@
     <nav class="lateral__nav">
       {% for item in MENU %}
         {% if item.habilitado %}
-          <a href="{{ item.url }}" class="nav-item" data-clave="{{ item.clave }}">{{ item.etiqueta }}</a>
+          <a href="{{ item.url }}" class="nav-item" data-clave="{{ item.clave }}">{% include "_icono.html" with nombre=item.clave %}{{ item.etiqueta }}</a>
         {% else %}
-          <span class="nav-item nav-item--deshabilitado" aria-disabled="true">{{ item.etiqueta }} <small>Próximamente</small></span>
+          <span class="nav-item nav-item--deshabilitado" aria-disabled="true">{% include "_icono.html" with nombre=item.clave %}{{ item.etiqueta }} <small>Próximamente</small></span>
         {% endif %}
       {% endfor %}
     </nav>
     <div class="lateral__usuario">
       {% if user.is_authenticated %}
-        <div class="usuario__nombre">{{ user.get_username }}</div>
-        <div class="usuario__oficina">Oficina principal</div>
+        <div class="usuario__nombre">{{ user.get_full_name|default:user.get_username }}</div>
+        <div class="usuario__oficina">{{ user.get_rol_display }} · Oficina principal</div>
+        <form method="post" action="{{ url_salir }}">
+          {% csrf_token %}
+          <button type="submit" class="enlace-salir">{% include "_icono.html" with nombre="salir" %}Cerrar sesión</button>
+        </form>
       {% endif %}
-      <form method="post" action="{{ url_salir|default:'#' }}">
-        {% csrf_token %}
-        <button type="submit" class="enlace-salir">Cerrar sesión</button>
-      </form>
     </div>
   </aside>
   <div class="principal">
