@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.core.exceptions import ValidationError
-from django.core.validators import MinValueValidator, RegexValidator
+from django.core.validators import MaxValueValidator, MinValueValidator, RegexValidator
 from django.db import models
 from django.db.models import F, Q
 
@@ -83,13 +83,16 @@ class Jugada(models.Model):
         'número', max_length=4,
         validators=[RegexValidator(r'^[0-9]{3,4}$', 'El número debe tener 3 o 4 cifras')],
     )
-    valor = models.PositiveIntegerField('valor', validators=[MinValueValidator(500, 'El valor mínimo es $500')])
+    valor = models.PositiveIntegerField('valor', validators=[MinValueValidator(500, 'El valor mínimo es $500'),
+                                                            MaxValueValidator(2147483647, 'El valor es demasiado alto')])
     loteria = models.ForeignKey(Loteria, on_delete=models.PROTECT, db_column='id_loteria',
                                 related_name='jugadas', verbose_name='lotería')
     promotor = models.ForeignKey(Promotor, on_delete=models.PROTECT, db_column='codigo_promotor',
                                  related_name='jugadas', verbose_name='promotor')
     usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, db_column='id_usuario',
                                 related_name='jugadas', verbose_name='usuario')
+    # Identifica el envío para que un reintento no duplique la jugada.
+    token_envio = models.UUIDField(null=True, blank=True, unique=True, editable=False)
 
     class Meta:
         db_table = 'jugada'
