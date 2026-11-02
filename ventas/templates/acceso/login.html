@@ -1,0 +1,33 @@
+{% extends "base_publica.html" %}
+{% load static %}
+{% block titulo %}Ingresar · RegiCont{% endblock %}
+{% block contenido %}
+<div class="tarjeta tarjeta-login">
+  <img src="{% static 'img/logo.png' %}" alt="Conexión Siglo XXI" width="80" height="80">
+  <h1>Ingresar a RegiCont</h1>
+  <p class="subtitulo">Registro y control de ventas de chance</p>
+  <form method="post">
+    {% csrf_token %}
+    {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
+    <div class="campo{% if form.username.errors %} campo--error{% endif %}">
+      <label for="{{ form.username.id_for_label }}">Usuario</label>
+      <div class="campo__control">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.5-7 8-7s8 3 8 7"/></svg>
+        {{ form.username }}
+      </div>
+      {% for e in form.username.errors %}<div class="mensaje-error">{{ e }}</div>{% endfor %}
+    </div>
+    <div class="campo{% if form.password.errors %} campo--error{% endif %}">
+      <label for="{{ form.password.id_for_label }}">Contraseña</label>
+      <div class="campo__control">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+        {{ form.password }}
+      </div>
+      {% for e in form.password.errors %}<div class="mensaje-error">{{ e }}</div>{% endfor %}
+    </div>
+    {% for e in form.non_field_errors %}<div class="error-general">{{ e }}</div>{% endfor %}
+    <button type="submit" class="btn btn--primario btn--ancho">Ingresar →</button>
+  </form>
+  <p class="nota-acceso">El acceso depende de su rol: Administrador u Operador</p>
+</div>
+{% endblock %}
