@@ -144,3 +144,12 @@ input:focus, select:focus { outline: none; border-color: var(--azul); box-shadow
 .aviso .btn { padding: 4px 12px; margin-left: 8px; background: #fff; border: 1px solid var(--rojo); color: var(--rojo); }
 .pie-form { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; }
 fieldset:disabled { opacity: .5; }
+
+/* Totales */
+.total-tarjeta { display: flex; align-items: center; gap: 16px; }
+.total-icono { background: var(--azul-claro); color: var(--azul); border-radius: 12px; padding: 14px; display: flex; }
+.total-grande { color: var(--azul); font-size: 40px; font-weight: 700; line-height: 1.1; }
+.total-lado { margin-left: auto; text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+.pie-total { background: var(--azul-claro); }
+.pie-total td { padding: 10px; font-weight: 700; }
+.pie-total .num { color: var(--azul); }
