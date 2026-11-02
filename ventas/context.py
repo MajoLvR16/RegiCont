@@ -23,4 +23,8 @@ def navegacion(request):
                 url = '#'
         menu.append({'clave': clave, 'etiqueta': etiqueta, 'url_name': url_name,
                      'url': url, 'habilitado': url_name is not None})
+    user = getattr(request, 'user', None)
+    if user is not None and user.is_authenticated and user.tiene_permiso('administrar'):
+        menu.append({'clave': 'administracion', 'etiqueta': 'Administración', 'url_name': None,
+                     'url': reverse('admin:index'), 'habilitado': True})
     return {'MENU': menu}
