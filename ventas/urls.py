@@ -15,4 +15,5 @@ urlpatterns = [
     path('digitacion/jugadas/', JugadaController.Registrar.as_view(), name='registrar_jugada'),
     path('digitacion/jugadas/hoy/', JugadaController.ListarHoy.as_view(), name='jugadas_hoy'),
     path('totales/', TotalController.Consolidado.as_view(), name='totales'),
+    path('totales/datos/', TotalController.Datos.as_view(), name='totales_datos'),
 ]
