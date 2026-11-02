@@ -153,3 +153,5 @@ fieldset:disabled { opacity: .5; }
 .pie-total { background: var(--azul-claro); }
 .pie-total td { padding: 10px; font-weight: 700; }
 .pie-total .num { color: var(--azul); }
+
+.tarjeta + .tarjeta { margin-top: 16px; }
