@@ -1,6 +1,42 @@
 {% extends "base.html" %}
+{% load static %}
 {% block titulo %}Totales consolidados · RegiCont{% endblock %}
 {% block menu_activo %}totales{% endblock %}
 {% block titulo_pagina %}Totales consolidados por número{% endblock %}
 {% block subtitulo_pagina %}Consulte el recaudo de la jornada, ordenado de mayor a menor.{% endblock %}
-{% block contenido %}{% endblock %}
+{% block contenido %}
+<div id="totales" data-url-datos="{% url 'ventas:totales_datos' %}" data-refresco="{{ refresco }}">
+  <section class="tarjeta total-tarjeta">
+    <div class="total-icono">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 7H5a2 2 0 0 1 0-4h13v4"/><path d="M3 5v14a2 2 0 0 0 2 2h15V7"/><circle cx="16.5" cy="14" r="1"/></svg>
+    </div>
+    <div>
+      <div class="texto-gris">Total recaudado hoy</div>
+      <div id="total-recaudado" class="total-grande">{{ total }}</div>
+    </div>
+    <div class="total-lado">
+      <span class="etiqueta-verde">✓ Jornada en curso</span>
+      <div class="texto-gris">Todas las loterías · Todos los promotores</div>
+      <span id="actualizado" class="texto-gris texto-chico">Actualizado {{ actualizado }}</span>
+    </div>
+  </section>
+  <section class="tarjeta">
+    <div class="tarjeta__cabecera">
+      <h2>Distribución del recaudo</h2>
+      <span class="texto-gris">Mayor a menor monto</span>
+    </div>
+    <table class="tabla" id="tabla-totales">
+      <thead><tr><th>Puesto</th><th>Número</th><th class="num">Monto acumulado</th></tr></thead>
+      <tbody>
+        {% for f in filas %}<tr><td>{{ f.puesto }}</td><td><strong>{{ f.numero }}</strong></td><td class="num">{{ f.monto }}</td></tr>
+        {% empty %}<tr><td colspan="3" class="texto-gris">Sin datos para ordenar</td></tr>{% endfor %}
+      </tbody>
+      <tfoot class="pie-total"{% if not cantidad %} hidden{% endif %}>
+        <tr><td colspan="2" id="pie-etiqueta">Total de la jornada · {{ cantidad }} número{{ cantidad|pluralize:"s" }}</td><td class="num" id="pie-total">{{ total }}</td></tr>
+      </tfoot>
+    </table>
+  </section>
+  <p class="texto-gris texto-chico">Consolidado completo del día.</p>
+</div>
+{% endblock %}
+{% block js_extra %}<script src="{% static 'js/totales.js' %}" defer></script>{% endblock %}

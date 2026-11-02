@@ -81,3 +81,13 @@ class RegistroJugadaService:
     def jugadas_de_hoy(limite):
         return (Jugada.objects.filter(fecha=timezone.localdate())
                 .select_related('loteria', 'promotor').order_by('-id_jugada')[:limite])
+
+
+class ReporteService:
+    @staticmethod
+    def consolidado_por_numero(fecha):
+        # Una sola consulta sobre TotalNumero; nunca recorre JUGADA (RF08).
+        datos = (TotalNumero.objects.filter(fecha=fecha)
+                 .order_by('-monto_acumulado', 'numero').values_list('numero', 'monto_acumulado'))
+        filas = [{'puesto': i, 'numero': n, 'monto': m} for i, (n, m) in enumerate(datos, 1)]
+        return {'filas': filas, 'total': sum(f['monto'] for f in filas), 'cantidad': len(filas)}
