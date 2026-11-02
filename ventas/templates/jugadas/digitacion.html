@@ -1,6 +1,75 @@
 {% extends "base.html" %}
+{% load static formato %}
 {% block titulo %}Digitación de jugadas · RegiCont{% endblock %}
 {% block menu_activo %}digitacion{% endblock %}
 {% block titulo_pagina %}Digitación de jugadas{% endblock %}
 {% block subtitulo_pagina %}Registre cada jugada y verifique los datos de la jornada.{% endblock %}
-{% block contenido %}{% endblock %}
+{% block contenido %}
+<section class="tarjeta">
+  <div class="tarjeta__cabecera">
+    <h2>Nueva jugada</h2>
+    <span class="texto-gris">Todos los campos son obligatorios</span>
+  </div>
+  {% if not loterias %}
+  <p class="aviso" role="alert">No hay loterías activas; el administrador debe registrarlas</p>
+  {% endif %}
+  <form id="form-jugada" method="post" novalidate data-url-registrar="{% url 'ventas:registrar_jugada' %}" data-url-hoy="{% url 'ventas:jugadas_hoy' %}" data-usuario="{{ user.get_username }}">
+    {% csrf_token %}
+    <fieldset class="sin-borde"{% if not loterias %} disabled{% endif %}>
+      <div class="rejilla-jugada">
+        <div class="campo">
+          <label for="promotor">Código de promotor</label>
+          <input id="promotor" list="lista-promotores" autocomplete="off">
+          <datalist id="lista-promotores">{% for p in promotores %}<option value="{{ p.codigo }}" label="{{ p }}">{% endfor %}</datalist>
+          <div class="mensaje-error" id="error-promotor" role="alert"></div>
+        </div>
+        <div class="campo">
+          <label for="loteria">Lotería</label>
+          <select id="loteria">{% for l in loterias %}<option value="{{ l.id_loteria }}">{{ l.nombre }}</option>{% endfor %}</select>
+          <div class="mensaje-error" id="error-loteria" role="alert"></div>
+        </div>
+        <div class="campo">
+          <label for="numero">Número · 3 o 4 cifras</label>
+          <input id="numero" type="text" inputmode="numeric" maxlength="4" autocomplete="off">
+          <div class="mensaje-error" id="error-numero" role="alert"></div>
+        </div>
+        <div class="campo">
+          <label for="valor">Valor de la jugada</label>
+          <input id="valor" type="text" inputmode="numeric" autocomplete="off" placeholder="$5.000">
+          <div class="rapidos">{% for v in valores_rapidos %}<button type="button" class="valor-rapido" data-valor="{{ v }}">{{ v|pesos }}</button>{% endfor %}</div>
+          <div class="mensaje-error" id="error-valor" role="alert"></div>
+        </div>
+      </div>
+      <div id="aviso-envio" class="aviso" role="alert" hidden>
+        <span id="aviso-texto"></span> <button type="button" class="btn" id="reintentar">Reintentar</button>
+      </div>
+      <div class="pie-form">
+        <div class="texto-gris texto-chico">
+          <div>Promotores: {% for p in promotores %}{{ p }}{% if not forloop.last %} · {% endif %}{% endfor %}</div>
+          <div>Valores: {% for v in valores_rapidos %}{{ v|pesos }}{% if not forloop.last %} · {% endif %}{% endfor %}</div>
+        </div>
+        <button type="submit" class="btn btn--primario">+ Agregar jugada</button>
+      </div>
+    </fieldset>
+  </form>
+</section>
+
+<section class="tarjeta" style="margin-top:16px">
+  <div class="tarjeta__cabecera">
+    <h2>Jugadas de hoy <span class="texto-gris texto-chico">Últimos {{ filas }} registros</span></h2>
+    <span id="estado" class="etiqueta-verde" hidden>✓ Registro actualizado</span>
+  </div>
+  <table class="tabla" id="tabla-jugadas">
+    <thead><tr><th>Hora</th><th>Número</th><th>Lotería</th><th class="num">Valor</th><th>Promotor</th></tr></thead>
+    <tbody>
+    {% for j in jugadas %}
+      <tr><td>{{ j.hora|time:"H:i:s" }}</td><td><strong>{{ j.numero }}</strong></td><td>{{ j.loteria }}</td><td class="num">{{ j.valor|pesos }}</td><td>{{ j.promotor }}</td></tr>
+    {% empty %}
+      <tr><td colspan="5">Aún no hay jugadas hoy</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  <p class="texto-gris texto-chico">Los registros se consolidan automáticamente en Totales.</p>
+</section>
+{% endblock %}
+{% block js_extra %}<script src="{% static 'js/digitacion.js' %}" defer></script>{% endblock %}

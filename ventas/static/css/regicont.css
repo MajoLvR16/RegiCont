@@ -125,3 +125,22 @@ input:focus, select:focus { outline: none; border-color: var(--azul); box-shadow
 .btn--ancho { width: 100%; margin-top: 8px; }
 .error-general { color: var(--rojo); margin-bottom: 8px; }
 .nota-acceso { color: var(--gris); font-size: 12px; text-align: center; margin: 16px 0 0; }
+
+/* Digitación */
+[hidden] { display: none !important; }
+.tarjeta__cabecera { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px; }
+.tarjeta__cabecera h2 { margin: 0; font-size: 18px; }
+.texto-gris { color: var(--gris); }
+.texto-chico { font-size: 12px; font-weight: 400; }
+.sin-borde { border: 0; margin: 0; padding: 0; min-width: 0; }
+.rejilla-jugada { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+@media (max-width: 900px) { .rejilla-jugada { grid-template-columns: repeat(2, 1fr); } }
+.rapidos { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+.valor-rapido { padding: 2px 8px; font: inherit; font-size: 12px; cursor: pointer; background: var(--azul-claro); color: var(--azul-oscuro); border: 1px solid var(--borde); border-radius: 10px; }
+.valor-rapido:hover { border-color: var(--azul); }
+.campo--error .mensaje-error { font-weight: 600; }
+.aviso { margin: 0 0 12px; padding: 10px 14px; border-radius: 8px; background: #fdeaea; border: 1px solid var(--rojo); color: var(--rojo); }
+.aviso[hidden] { display: none; }
+.aviso .btn { padding: 4px 12px; margin-left: 8px; background: #fff; border: 1px solid var(--rojo); color: var(--rojo); }
+.pie-form { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; }
+fieldset:disabled { opacity: .5; }

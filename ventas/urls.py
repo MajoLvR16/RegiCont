@@ -12,5 +12,7 @@ urlpatterns = [
     path('acceso/ingresar/', AccesoController.Ingresar.as_view(), name='ingresar'),
     path('acceso/salir/', AccesoController.Salir.as_view(), name='salir'),
     path('digitacion/', JugadaController.Pantalla.as_view(), name='digitacion'),
+    path('digitacion/jugadas/', JugadaController.Registrar.as_view(), name='registrar_jugada'),
+    path('digitacion/jugadas/hoy/', JugadaController.ListarHoy.as_view(), name='jugadas_hoy'),
     path('totales/', TotalController.Consolidado.as_view(), name='totales'),
 ]
