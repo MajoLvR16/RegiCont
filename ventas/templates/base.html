@@ -1,0 +1,53 @@
+{% load static %}<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block titulo %}RegiCont{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'css/regicont.css' %}">
+</head>
+<body class="app" data-menu="{% block menu_activo %}{% endblock %}">
+  {% url 'ventas:salir' as url_salir %}
+  <aside class="lateral">
+    <div class="lateral__marca">
+      <img src="{% static 'img/logo.png' %}" alt="Conexión Siglo XXI" width="44" height="44">
+      <div>
+        <div class="marca">RegiCont</div>
+        <div class="subtitulo-marca">REGISTRO Y CONTROL DE CHANCE</div>
+      </div>
+    </div>
+    <nav class="lateral__nav">
+      {% for item in MENU %}
+        {% if item.habilitado %}
+          <a href="{{ item.url }}" class="nav-item" data-clave="{{ item.clave }}">{{ item.etiqueta }}</a>
+        {% else %}
+          <span class="nav-item nav-item--deshabilitado" aria-disabled="true">{{ item.etiqueta }} <small>Próximamente</small></span>
+        {% endif %}
+      {% endfor %}
+    </nav>
+    <div class="lateral__usuario">
+      {% if user.is_authenticated %}
+        <div class="usuario__nombre">{{ user.get_username }}</div>
+        <div class="usuario__oficina">Oficina principal</div>
+      {% endif %}
+      <form method="post" action="{{ url_salir|default:'#' }}">
+        {% csrf_token %}
+        <button type="submit" class="enlace-salir">Cerrar sesión</button>
+      </form>
+    </div>
+  </aside>
+  <div class="principal">
+    <div class="migas">RegiCont › Oficina principal</div>
+    <header class="encabezado">
+      <div>
+        <h1>{% block titulo_pagina %}{% endblock %}</h1>
+        <p class="subtitulo">{% block subtitulo_pagina %}{% endblock %}</p>
+      </div>
+      <div class="fecha">{% now "j \d\e F \d\e Y" %}</div>
+    </header>
+    {% include "_mensajes.html" %}
+    {% block contenido %}{% endblock %}
+  </div>
+  {% block js_extra %}{% endblock %}
+</body>
+</html>

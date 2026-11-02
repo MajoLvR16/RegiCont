@@ -1,0 +1,20 @@
+{% load static %}<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block titulo %}RegiCont{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'css/regicont.css' %}">
+</head>
+<body class="publica">
+  <header class="topbar-publica">
+    <img src="{% static 'img/logo.png' %}" alt="Conexión Siglo XXI" width="40" height="40">
+    <span class="marca">RegiCont</span>
+  </header>
+  <main class="centrado">
+    {% include "_mensajes.html" %}
+    {% block contenido %}{% endblock %}
+  </main>
+  {% block js_extra %}{% endblock %}
+</body>
+</html>
