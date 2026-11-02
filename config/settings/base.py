@@ -67,6 +67,14 @@ DATABASES = {
     'default': env.db('DATABASE_URL', default=f'sqlite:///{BASE_DIR / "db.sqlite3"}'),
 }
 
+# IMMEDIATE evita 'database is locked' con varios operadores; las pruebas usan
+# archivo para poder probar concurrencia con hilos.
+if 'sqlite3' in DATABASES['default']['ENGINE']:
+    DATABASES['default'].setdefault('OPTIONS', {}).update({'transaction_mode': 'IMMEDIATE', 'timeout': 20})
+    DATABASES['default']['TEST'] = {'NAME': BASE_DIR / 'test_db.sqlite3'}
+
+AUTH_USER_MODEL = 'ventas.Usuario'
+
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
     {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},

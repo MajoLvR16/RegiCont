@@ -7,3 +7,5 @@ staticfiles/
 .idea/
 .vscode/
 htmlcov/
+
+test_db.sqlite3
