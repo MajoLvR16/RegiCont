@@ -1,0 +1,26 @@
+html, :root {
+  --primary: #1f5fa8; --secondary: #17407a; --accent: #e8f0fb; --primary-fg: #fff;
+  --header-bg: #17407a; --header-fg: #fff; --header-link-color: #fff;
+  --breadcrumbs-bg: #1f5fa8; --link-fg: #1f5fa8; --link-hover-color: #17407a;
+  --button-bg: #1f5fa8; --button-hover-bg: #17407a;
+  --default-button-bg: #17407a; --default-button-hover-bg: #1f5fa8;
+  --object-tools-bg: #1f5fa8;
+}
+body { font-size: 16px; }
+input, select, textarea, .button, input[type=submit], input[type=button] { font-size: 16px; }
+input[type=text], input[type=password], select { padding: 8px 10px; }
+.button, input[type=submit], input[type=button] { padding: 10px 16px; }
+#header, #user-tools { text-transform: none; }
+#header { padding: 10px 24px; }
+#site-name a { display: inline-flex; align-items: center; gap: 10px; font-size: 1.4rem; }
+#user-tools { font-size: 1rem; }
+#toggle-nav-sidebar, #nav-sidebar { display: none !important; }
+.main > .content { flex: 1 1 auto; width: 100%; max-width: 100%; }
+#recent-actions-module { display: none; }
+.change-form .object-tools { display: none; }
+.help, .form-row .help { font-size: 13px; color: #4a5866; }
+.boton-contrasena {
+  display: inline-block; padding: 10px 16px; margin-right: 10px; border-radius: 6px;
+  background: var(--button-bg); color: #fff !important; text-decoration: none;
+}
+.boton-contrasena:hover { background: var(--button-hover-bg); }

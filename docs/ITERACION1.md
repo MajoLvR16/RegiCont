@@ -46,6 +46,8 @@ Usuario → Vista → Controlador → Servicio → Modelo → BD
 
 **h) Mapeo de permisos.** El Administrador recibe `is_staff` automáticamente; el Operador no accede al administrador. `Jugada` y `TotalNumero` son de solo lectura en el administrador para no descuadrar los totales.
 
+**i) Administración de catálogos y usuarios.** El rol Administrador gestiona Loterías, Promotores y Usuarios en un admin de Django adaptado (en español, sin borrado: se desactivan). Las pantallas propias de loterías y usuarios irán en la Iteración 2 mediante solicitud de cambio.
+
 ## 5. Rendimiento medido
 
 Con 2.535 jugadas por $14.000.000 en SQLite, fecha 2 de noviembre de 2026:

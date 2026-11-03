@@ -68,9 +68,9 @@ El rol lo asigna el Administrador desde Administración, en Usuarios. Usuarios i
 ## Registrar loterías y promotores
 
 1. Ingrese como `doctor` y abra Administración (`/admin/`).
-2. Loterías → Agregar. El nombre debe ser único. Para dejar de usar una lotería, desmárquela como activa (no se borra).
+2. Loterías → Agregar lotería. El nombre debe ser único. Para dejar de usar una lotería, desmárquela como Activa (no se borra; tampoco hay botón de borrar).
 3. La pantalla de Digitación muestra solo las loterías activas.
-4. Los promotores se registran igual (Promotores → Agregar); la comisión es un parámetro editable que solo se almacena.
+4. Los promotores se registran igual (Promotores → Agregar promotor); la comisión es un parámetro editable que solo se almacena.
 
 El comando inicial carga Bogotá, Medellín y Boyacá únicamente como ejemplo.
 
