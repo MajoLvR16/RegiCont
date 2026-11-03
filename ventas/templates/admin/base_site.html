@@ -1,0 +1,25 @@
+{% extends "admin/base.html" %}
+{% load i18n static %}
+
+{% block title %}{% if subtitle %}{{ subtitle }} | {% endif %}{{ title }} | {{ site_title }}{% endblock %}
+
+{% block dark-mode-vars %}{% endblock %}
+
+{% block extrastyle %}{{ block.super }}<link rel="stylesheet" href="{% static 'css/admin_regicont.css' %}">{% endblock %}
+
+{% block branding %}
+<div id="site-name"><a href="{% url 'admin:index' %}"><img src="{% static 'img/logo.png' %}" alt="" width="36" height="36"> RegiCont · Administración</a></div>
+{% endblock %}
+
+{% block welcome-msg %}Sesión de <strong>{% firstof user.first_name user.get_username %}</strong>{% endblock %}
+
+{% block userlinks %}
+  <a href="{% url 'ventas:inicio' %}">Volver a RegiCont</a> /
+  <a href="{% url 'admin:password_change' %}">Cambiar mi contraseña</a> /
+  <form id="logout-form" method="post" action="{% url 'admin:logout' %}">
+    {% csrf_token %}
+    <button type="submit">Cerrar sesión</button>
+  </form>
+{% endblock %}
+
+{% block nav-global %}{% endblock %}
