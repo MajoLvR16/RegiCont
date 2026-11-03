@@ -24,13 +24,13 @@ FILAS_JUGADAS_HOY = env('FILAS_JUGADAS_HOY')
 REFRESCO_TOTALES_SEGUNDOS = env('REFRESCO_TOTALES_SEGUNDOS')
 
 INSTALLED_APPS = [
+    'ventas',  # antes del admin: sus plantillas sustituyen a las de Django
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'ventas',
 ]
 
 MIDDLEWARE = [
