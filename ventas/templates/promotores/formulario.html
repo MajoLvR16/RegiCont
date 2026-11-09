@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block titulo %}{{ titulo }} · RegiCont{% endblock %}
+{% block menu_activo %}promotores{% endblock %}
+{% block titulo_pagina %}{{ titulo }}{% endblock %}
+{% block subtitulo_pagina %}Un promotor inactivo no se puede digitar, pero conserva sus jugadas.{% endblock %}
+{% block contenido %}
+<section class="tarjeta">
+  <form method="post" novalidate>
+    {% csrf_token %}
+    <div class="rejilla-promotor">
+      <div class="campo{% if errores.codigo %} campo--error{% endif %}">
+        <label for="id_codigo">Código</label>
+        {% if promotor %}<div class="campo-fecha">{{ promotor.codigo }}</div>
+        <div class="texto-gris texto-chico">El código no se puede cambiar</div>
+        {% else %}{{ form.codigo }}
+        <div class="texto-gris texto-chico">De 3 a 10 dígitos, por ejemplo 502</div>{% endif %}
+        {% if errores.codigo %}<div class="mensaje-error" role="alert">{{ errores.codigo }}</div>{% endif %}
+      </div>
+      <div class="campo{% if errores.nombre %} campo--error{% endif %}">
+        <label for="id_nombre">Nombre</label>
+        {{ form.nombre }}
+        {% if errores.nombre %}<div class="mensaje-error" role="alert">{{ errores.nombre }}</div>{% endif %}
+      </div>
+      <div class="campo{% if errores.tipo %} campo--error{% endif %}">
+        <label for="id_tipo">Tipo</label>
+        {{ form.tipo }}
+        {% if errores.tipo %}<div class="mensaje-error" role="alert">{{ errores.tipo }}</div>{% endif %}
+      </div>
+      <div class="campo{% if errores.parametro_comision %} campo--error{% endif %}">
+        <label for="id_parametro_comision">Parámetro de comisión</label>
+        {{ form.parametro_comision }}
+        <div class="texto-gris texto-chico">De 0 a 999,99. Solo se guarda; el sistema no calcula comisiones</div>
+        {% if errores.parametro_comision %}<div class="mensaje-error" role="alert">{{ errores.parametro_comision }}</div>{% endif %}
+      </div>
+    </div>
+    <div class="pie-form">
+      <a href="{% url 'ventas:promotores' %}">Cancelar</a>
+      <button type="submit" class="btn btn--primario">Guardar</button>
+    </div>
+  </form>
+</section>
+{% endblock %}

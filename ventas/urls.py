@@ -5,6 +5,7 @@ from ventas.views.acceso import AccesoController
 from ventas.views.consulta import ConsultaController
 from ventas.views.cubiertas import CubiertaController
 from ventas.views.jugadas import JugadaController
+from ventas.views.promotores import PromotorController
 from ventas.views.totales import TotalController
 
 app_name = 'ventas'
@@ -20,6 +21,10 @@ urlpatterns = [
     path('cubiertas/', CubiertaController.Pantalla.as_view(), name='cubiertas'),
     path('cubiertas/topes/', CubiertaController.RegistrarTope.as_view(), name='registrar_tope'),
     path('cubiertas/<str:numero>/', CubiertaController.Detalle.as_view(), name='detalle_cubierta'),
+    path('promotores/', PromotorController.Listado.as_view(), name='promotores'),
+    path('promotores/nuevo/', PromotorController.Nuevo.as_view(), name='nuevo_promotor'),
+    path('promotores/<str:codigo>/editar/', PromotorController.Editar.as_view(), name='editar_promotor'),
+    path('promotores/<str:codigo>/estado/', PromotorController.CambiarEstado.as_view(), name='estado_promotor'),
     path('totales/', TotalController.Consolidado.as_view(), name='totales'),
     path('totales/datos/', TotalController.Datos.as_view(), name='totales_datos'),
 ]

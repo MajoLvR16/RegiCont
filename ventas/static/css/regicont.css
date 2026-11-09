@@ -49,6 +49,7 @@ body[data-menu="digitacion"] a[data-clave="digitacion"],
 body[data-menu="totales"] a[data-clave="totales"],
 body[data-menu="consulta"] a[data-clave="consulta"],
 body[data-menu="cubiertas"] a[data-clave="cubiertas"],
+body[data-menu="promotores"] a[data-clave="promotores"],
 body[data-menu="administracion"] a[data-clave="administracion"] {
   background: var(--azul-claro); color: var(--azul-oscuro); font-weight: 700;
 }
@@ -175,3 +176,13 @@ fieldset:disabled { opacity: .5; }
 .fila--supera { background: #fdeaea; color: var(--rojo); font-weight: 600; }
 .cifra-resumen { font-size: 22px; font-weight: 700; color: var(--azul); }
 @media (max-width: 560px) { .rejilla-tope { grid-template-columns: 1fr; } }
+
+/* Catálogo de promotores */
+.rejilla-promotor { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+.barra-promotores { display: flex; gap: 12px; align-items: end; flex-wrap: wrap; }
+.barra-promotores .campo { margin-bottom: 0; flex: 1; min-width: 200px; }
+.estado--activo { color: var(--verde, #1a7f37); font-weight: 600; }
+.estado--inactivo { color: var(--gris); font-weight: 600; }
+.form-en-linea { display: inline; margin-left: 12px; }
+.btn-enlace { background: none; border: 0; padding: 0; color: var(--azul); font: inherit; cursor: pointer; text-decoration: underline; }
+@media (max-width: 560px) { .rejilla-promotor { grid-template-columns: 1fr; } }
