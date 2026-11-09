@@ -40,7 +40,7 @@ class Usuario(AbstractUser):
     rol = models.CharField('rol', max_length=20, choices=Rol.choices, default=Rol.OPERADOR)
 
     PERMISOS = {
-        Rol.ADMINISTRADOR: {'digitar', 'ver_totales', 'consultar', 'administrar'},
+        Rol.ADMINISTRADOR: {'digitar', 'ver_totales', 'consultar', 'cubiertas', 'administrar'},
         Rol.OPERADOR: {'digitar', 'ver_totales', 'consultar'},
     }
 
@@ -117,3 +117,37 @@ class TotalNumero(models.Model):
         # F() suma en la BD, evita perder sumas con concurrencia.
         type(self).objects.filter(pk=self.pk).update(monto_acumulado=F('monto_acumulado') + valor)
         self.refresh_from_db(fields=['monto_acumulado'])
+
+
+class TopeCubierta(models.Model):
+    numero = models.CharField(
+        'número', max_length=4, primary_key=True,
+        validators=[RegexValidator(r'^[0-9]{3,4}$', 'El número debe tener 3 o 4 cifras')],
+    )
+    monto_tope = models.PositiveIntegerField('monto del tope', validators=[
+        MinValueValidator(1, 'El monto del tope debe ser mayor que cero'),
+        MaxValueValidator(2147483647, 'El monto es demasiado alto')])
+    # Quién lo registró o actualizó por última vez.
+    usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, db_column='id_usuario',
+                                related_name='topes_cubierta', verbose_name='usuario')
+    fecha_actualizacion = models.DateTimeField('fecha de actualización', auto_now=True)
+
+    class Meta:
+        db_table = 'tope_cubierta'
+        ordering = ['numero']
+        verbose_name = 'tope de cubierta'
+        verbose_name_plural = 'topes de cubierta'
+        constraints = [
+            models.CheckConstraint(condition=Q(monto_tope__gt=0), name='tope_cubierta_monto_positivo'),
+        ]
+
+    def __str__(self):
+        return f'{self.numero}: {self.monto_tope}'
+
+    def actualizar(self, monto, usuario):
+        self.monto_tope = monto
+        self.usuario = usuario
+        self.save()
+
+    def superar_tope(self, monto_jugado):
+        return monto_jugado > self.monto_tope

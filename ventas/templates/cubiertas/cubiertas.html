@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% load formato %}
+{% block titulo %}Control de cubiertas · RegiCont{% endblock %}
+{% block menu_activo %}cubiertas{% endblock %}
+{% block titulo_pagina %}Control de cubiertas{% endblock %}
+{% block subtitulo_pagina %}Compare lo recaudado por número contra su tope de cubierta.{% endblock %}
+{% block contenido %}
+<section class="tarjeta">
+  <form method="get" action="{% url 'ventas:cubiertas' %}" novalidate>
+    <div class="rejilla-tope">
+      <div class="campo{% if form.fecha.errors %} campo--error{% endif %}">
+        <label for="{{ form.fecha.id_for_label }}">Fecha</label>
+        {{ form.fecha }}
+        {% for e in form.fecha.errors %}<div class="mensaje-error" role="alert">{{ e }}</div>{% endfor %}
+      </div>
+      <div><button type="submit" class="btn btn--primario">Consultar</button></div>
+    </div>
+  </form>
+</section>
+{% if consultado %}
+<section class="tarjeta">
+  <div class="tarjeta__cabecera"><h2>Jornada del {{ fecha|date:"j \d\e F \d\e Y" }}</h2></div>
+  <p>Total recaudado: <span class="cifra-resumen">{{ total_recaudado|pesos }}</span></p>
+  <p>{% if cantidad_superan == 0 %}Ningún número supera su tope{% elif cantidad_superan == 1 %}<strong>1</strong> número supera su tope{% else %}<strong>{{ cantidad_superan }}</strong> números superan su tope{% endif %}</p>
+</section>
+<section class="tarjeta tabla-ancha">
+  <table class="tabla">
+    <thead><tr><th>Puesto</th><th>Número</th><th class="num">Recaudado</th><th class="num">Tope</th><th class="num">Diferencia</th><th>Estado</th></tr></thead>
+    <tbody>
+      {% for f in filas %}<tr{% if f.supera %} class="fila--supera"{% endif %}>
+        <td>{{ f.puesto }}</td>
+        <td><a href="{% url 'ventas:detalle_cubierta' f.numero %}?fecha={{ fecha|date:'Y-m-d' }}"><strong>{{ f.numero }}</strong></a></td>
+        <td class="num">{{ f.recaudado|pesos }}</td>
+        <td class="num">{% if f.tope is None %}Sin tope de cubierta definido{% else %}{{ f.tope|pesos }}{% endif %}</td>
+        <td class="num">{% if f.diferencia is not None %}{{ f.diferencia|pesos_con_signo }}{% endif %}</td>
+        <td>{% if f.supera %}Supera el tope{% elif f.tope is not None %}Dentro del tope{% endif %}</td>
+      </tr>{% empty %}<tr><td colspan="6" class="texto-gris">Sin datos para ordenar</td></tr>{% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endif %}
+<section class="tarjeta">
+  <div class="tarjeta__cabecera"><h2>Registrar o actualizar tope</h2></div>
+  <form method="post" action="{% url 'ventas:registrar_tope' %}" novalidate>
+    {% csrf_token %}
+    {% if fecha %}<input type="hidden" name="fecha" value="{{ fecha|date:'Y-m-d' }}">{% endif %}
+    <div class="rejilla-tope">
+      <div class="campo{% if errores.numero %} campo--error{% endif %}">
+        <label for="id_numero">Número · 3 o 4 cifras</label>
+        <input type="text" name="numero" id="id_numero" value="{{ valores.numero }}" inputmode="numeric" maxlength="4" autocomplete="off">
+        {% if errores.numero %}<div class="mensaje-error" role="alert">{{ errores.numero }}</div>{% endif %}
+      </div>
+      <div class="campo{% if errores.monto %} campo--error{% endif %}">
+        <label for="id_monto">Monto del tope</label>
+        <input type="text" name="monto" id="id_monto" value="{{ valores.monto }}" inputmode="numeric" autocomplete="off">
+        {% if errores.monto %}<div class="mensaje-error" role="alert">{{ errores.monto }}</div>{% endif %}
+      </div>
+      <div><button type="submit" class="btn btn--primario">Guardar tope</button></div>
+    </div>
+  </form>
+</section>
+<section class="tarjeta tabla-ancha">
+  <div class="tarjeta__cabecera"><h2>Topes registrados</h2></div>
+  <table class="tabla">
+    <thead><tr><th>Número</th><th class="num">Tope</th><th>Actualizado por</th><th>Fecha de actualización</th><th></th></tr></thead>
+    <tbody>
+      {% for t in topes %}<tr>
+        <td><strong>{{ t.numero }}</strong></td><td class="num">{{ t.monto_tope|pesos }}</td>
+        <td>{{ t.usuario.get_username }}</td><td>{{ t.fecha_actualizacion|date:"j \d\e F \d\e Y, H:i" }}</td>
+        <td><a href="?{% if fecha %}fecha={{ fecha|date:'Y-m-d' }}&amp;{% endif %}editar={{ t.numero }}">Editar</a></td>
+      </tr>{% empty %}<tr><td colspan="5" class="texto-gris">Aún no hay topes registrados</td></tr>{% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endblock %}

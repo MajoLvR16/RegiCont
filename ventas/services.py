@@ -1,3 +1,4 @@
+import re
 import uuid
 
 from django.core.exceptions import ValidationError
@@ -5,7 +6,7 @@ from django.db import IntegrityError, transaction
 from django.db.models import Count, Sum
 from django.utils import timezone
 
-from ventas.models import Jugada, Promotor, TotalNumero
+from ventas.models import Jugada, Promotor, TopeCubierta, TotalNumero
 
 
 class ErrorValidacion(Exception):
@@ -121,3 +122,54 @@ class ConsultaService:
         if numero:
             datos.update(numero=numero, total_parcial=total)
         return datos
+
+
+class CubiertaService:
+    @staticmethod
+    def registrar_tope(numero, monto, usuario):
+        """Crea o actualiza el tope del número. Devuelve (tope, creado)."""
+        errores = {}
+        numero = numero.strip() if isinstance(numero, str) else ''
+        if not re.fullmatch(r'[0-9]{3,4}', numero):
+            errores['numero'] = 'El número debe tener 3 o 4 cifras'
+        digitos = re.sub(r'\D', '', str(monto if monto is not None else ''))
+        valor = int(digitos) if digitos and '-' not in str(monto) else 0
+        if valor <= 0:
+            errores['monto'] = 'El monto del tope debe ser mayor que cero'
+        elif valor > 2147483647:
+            errores['monto'] = 'El monto es demasiado alto'
+        if errores:
+            raise ErrorValidacion(errores)
+        return TopeCubierta.objects.update_or_create(
+            numero=numero, defaults={'monto_tope': valor, 'usuario': usuario})
+
+    @staticmethod
+    def reporte(fecha):
+        datos = list(TotalNumero.objects.filter(fecha=fecha)
+                     .order_by('-monto_acumulado', 'numero').values_list('numero', 'monto_acumulado'))
+        topes = dict(TopeCubierta.objects.filter(numero__in=[n for n, _ in datos])
+                     .values_list('numero', 'monto_tope'))
+        filas = []
+        for puesto, (numero, recaudado) in enumerate(datos, 1):
+            tope = topes.get(numero)
+            filas.append({'puesto': puesto, 'numero': numero, 'recaudado': recaudado, 'tope': tope,
+                          'diferencia': None if tope is None else tope - recaudado,
+                          'supera': tope is not None and recaudado > tope})
+        return {'filas': filas, 'cantidad_superan': sum(f['supera'] for f in filas),
+                'total_recaudado': sum(f['recaudado'] for f in filas)}
+
+    @staticmethod
+    def aportes(fecha, numero):
+        filas = (Jugada.objects.filter(fecha=fecha, numero=numero).order_by()
+                 .values('promotor_id', 'promotor__nombre', 'promotor__tipo')
+                 .annotate(cantidad=Count('id_jugada'), total=Sum('valor'))
+                 .order_by('-total', 'promotor_id'))
+        promotores = [{'promotor': str(Promotor(codigo=f['promotor_id'], nombre=f['promotor__nombre'],
+                                                tipo=f['promotor__tipo'])),
+                       'cantidad': f['cantidad'], 'total': f['total']} for f in filas]
+        recaudado = TotalNumero.objects.filter(fecha=fecha, numero=numero).values_list(
+            'monto_acumulado', flat=True).first() or 0
+        tope = TopeCubierta.objects.filter(numero=numero).values_list('monto_tope', flat=True).first()
+        return {'promotores': promotores, 'recaudado': recaudado, 'tope': tope,
+                'diferencia': None if tope is None else tope - recaudado,
+                'supera': tope is not None and recaudado > tope}

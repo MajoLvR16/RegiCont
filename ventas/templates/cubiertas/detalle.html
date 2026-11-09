@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% load formato %}
+{% block titulo %}Número {{ numero }} · Control de cubiertas · RegiCont{% endblock %}
+{% block menu_activo %}cubiertas{% endblock %}
+{% block titulo_pagina %}Control de cubiertas{% endblock %}
+{% block subtitulo_pagina %}Compare lo recaudado por número contra su tope de cubierta.{% endblock %}
+{% block contenido %}
+<section class="tarjeta{% if supera %} fila--supera{% endif %}">
+  <div class="tarjeta__cabecera"><h2>Número {{ numero }} · {{ fecha|date:"j \d\e F \d\e Y" }}</h2></div>
+  <p>Recaudado: <strong>{{ recaudado|pesos }}</strong></p>
+  <p>Tope: <strong>{% if tope is None %}Sin tope de cubierta definido{% else %}{{ tope|pesos }}{% endif %}</strong></p>
+  {% if diferencia is not None %}<p>Diferencia: <strong>{{ diferencia|pesos_con_signo }}</strong>{% if supera %} · Supera el tope{% endif %}</p>{% endif %}
+</section>
+<section class="tarjeta tabla-ancha">
+  <div class="tarjeta__cabecera"><h2>Promotores que aportaron</h2></div>
+  <table class="tabla">
+    <thead><tr><th>Promotor</th><th class="num">Jugadas</th><th class="num">Total</th></tr></thead>
+    <tbody>
+      {% for p in promotores %}<tr><td>{{ p.promotor }}</td><td class="num">{{ p.cantidad }}</td><td class="num">{{ p.total|pesos }}</td></tr>
+      {% empty %}<tr><td colspan="3" class="texto-gris">Sin jugadas para este número en la fecha</td></tr>{% endfor %}
+    </tbody>
+  </table>
+</section>
+<p><a href="{% url 'ventas:cubiertas' %}?fecha={{ fecha|date:'Y-m-d' }}">Volver al reporte</a></p>
+{% endblock %}

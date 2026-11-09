@@ -48,6 +48,7 @@ a.nav-item:hover { background: var(--fondo); }
 body[data-menu="digitacion"] a[data-clave="digitacion"],
 body[data-menu="totales"] a[data-clave="totales"],
 body[data-menu="consulta"] a[data-clave="consulta"],
+body[data-menu="cubiertas"] a[data-clave="cubiertas"],
 body[data-menu="administracion"] a[data-clave="administracion"] {
   background: var(--azul-claro); color: var(--azul-oscuro); font-weight: 700;
 }
@@ -167,3 +168,10 @@ fieldset:disabled { opacity: .5; }
 .tabla-ancha { overflow-x: auto; }
 @media (max-width: 900px) { .rejilla-consulta { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 560px) { .rejilla-consulta { grid-template-columns: 1fr; } }
+
+/* Control de cubiertas */
+.rejilla-tope { display: grid; grid-template-columns: 1fr 1fr auto; gap: 14px; align-items: end; }
+.rejilla-tope .campo { margin-bottom: 0; }
+.fila--supera { background: #fdeaea; color: var(--rojo); font-weight: 600; }
+.cifra-resumen { font-size: 22px; font-weight: 700; color: var(--azul); }
+@media (max-width: 560px) { .rejilla-tope { grid-template-columns: 1fr; } }
