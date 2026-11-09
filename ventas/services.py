@@ -1,9 +1,10 @@
 import re
 import uuid
+from decimal import Decimal, InvalidOperation
 
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError, transaction
-from django.db.models import Count, Sum
+from django.db.models import Count, Q, Sum
 from django.utils import timezone
 
 from ventas.models import Jugada, Promotor, TopeCubierta, TotalNumero
@@ -30,6 +31,8 @@ class RegistroJugadaService:
         promotor = Promotor.objects.filter(codigo=str(codigo_promotor).strip()).first()
         if promotor is None:
             errores['promotor'] = 'Código de promotor no existe'
+        elif not promotor.activo:
+            errores['promotor'] = f'El promotor {promotor.codigo} está inactivo'
 
         if isinstance(valor, int) and not isinstance(valor, bool):
             valor_int = valor
@@ -173,3 +176,64 @@ class CubiertaService:
         return {'promotores': promotores, 'recaudado': recaudado, 'tope': tope,
                 'diferencia': None if tope is None else tope - recaudado,
                 'supera': tope is not None and recaudado > tope}
+
+
+class PromotorService:
+    # El sistema solo guarda el parámetro de comisión; no calcula comisiones.
+    @staticmethod
+    def _validar(nombre, tipo, parametro_comision, codigo=None):
+        errores = {}
+        if codigo is not None:
+            codigo = codigo.strip() if isinstance(codigo, str) else ''
+            if not (codigo.isascii() and codigo.isdigit() and 3 <= len(codigo) <= 10):
+                errores['codigo'] = 'El código debe tener de 3 a 10 dígitos'
+        nombre = nombre.strip() if isinstance(nombre, str) else ''
+        if not nombre or len(nombre) > 100:
+            errores['nombre'] = 'Escriba el nombre' if not nombre else 'El nombre admite máximo 100 caracteres'
+        if tipo not in Promotor.Tipo.values:
+            errores['tipo'] = 'Seleccione un tipo válido'
+        texto = str(parametro_comision if parametro_comision is not None else '').strip().replace(',', '.')
+        comision = Decimal(0)
+        if texto:
+            try:
+                comision = Decimal(texto)
+                if not (re.fullmatch(r'\d+(\.\d{1,2})?', texto) and comision <= Decimal('999.99')):
+                    raise InvalidOperation
+            except InvalidOperation:
+                errores['parametro_comision'] = 'Digite un parámetro de comisión válido (por ejemplo 2,50)'
+        return codigo, nombre, comision, errores
+
+    @classmethod
+    def registrar(cls, codigo, nombre, tipo, parametro_comision):
+        codigo, nombre, comision, errores = cls._validar(nombre, tipo, parametro_comision, codigo)
+        if 'codigo' not in errores and Promotor.objects.filter(codigo=codigo).exists():
+            errores['codigo'] = f'El código {codigo} ya existe; no se puede duplicar.'
+        if errores:
+            raise ErrorValidacion(errores)
+        return Promotor.objects.create(codigo=codigo, nombre=nombre, tipo=tipo,
+                                       parametro_comision=comision, activo=True)
+
+    @classmethod
+    def actualizar(cls, codigo, nombre, tipo, parametro_comision):
+        promotor = Promotor.objects.get(codigo=codigo)
+        _, nombre, comision, errores = cls._validar(nombre, tipo, parametro_comision)
+        if errores:
+            raise ErrorValidacion(errores)
+        promotor.nombre, promotor.tipo, promotor.parametro_comision = nombre, tipo, comision
+        promotor.save()
+        return promotor
+
+    @staticmethod
+    def cambiar_estado(codigo, activo):
+        promotor = Promotor.objects.get(codigo=codigo)
+        promotor.activo = bool(activo)
+        promotor.save(update_fields=['activo'])
+        return promotor
+
+    @staticmethod
+    def listar(busqueda=''):
+        promotores = Promotor.objects.order_by('codigo')
+        busqueda = (busqueda or '').strip()
+        if busqueda:
+            promotores = promotores.filter(Q(codigo__icontains=busqueda) | Q(nombre__icontains=busqueda))
+        return promotores

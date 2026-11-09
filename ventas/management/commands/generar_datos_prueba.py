@@ -35,7 +35,7 @@ class Command(BaseCommand):
             fecha = datetime.strptime(fecha, '%Y-%m-%d').date() if fecha else timezone.localdate()
         except ValueError:
             raise CommandError('Fecha inválida, use AAAA-MM-DD')
-        promotores = list(Promotor.objects.all())
+        promotores = list(Promotor.objects.filter(activo=True))
         usuarios = list(Usuario.objects.filter(is_active=True, rol=Usuario.Rol.OPERADOR))
         if not (promotores and usuarios):
             raise CommandError('Ejecute primero cargar_datos_iniciales')

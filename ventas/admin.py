@@ -6,7 +6,7 @@ from django.contrib.auth.models import Group
 from django.urls import reverse
 from django.utils.html import format_html
 
-from .models import Jugada, Promotor, TotalNumero, Usuario
+from .models import Jugada, TotalNumero, Usuario
 
 
 def tiene_acceso_admin(request):
@@ -94,24 +94,6 @@ class TextosClarosMixin:
         if level == messages.SUCCESS and obj is not None and vista.endswith(('_add', '_change')):
             message = f'Listo: se guardó {obj._meta.verbose_name} «{obj}».'
         super().message_user(request, message, level, extra_tags, fail_silently)
-
-
-@admin.register(Promotor)
-class PromotorAdmin(SinBorrarMixin, SoloAdministradorMixin, TextosClarosMixin, admin.ModelAdmin):
-    list_display = ('codigo', 'nombre', 'tipo', 'parametro_comision')
-    search_fields = ('codigo', 'nombre')
-    list_filter = ('tipo',)
-    etiquetas = {'codigo': 'Código', 'nombre': 'Nombre', 'tipo': 'Tipo',
-                 'parametro_comision': 'Parámetro de comisión'}
-    ayudas = {
-        'codigo': 'Código que se digita con cada jugada, por ejemplo 502. No se puede cambiar después de guardarlo.',
-        'nombre': 'Nombre del promotor, vendedor u oficina.',
-        'tipo': 'Elija si es promotor, vendedor u oficina.',
-        'parametro_comision': 'Porcentaje de referencia. El sistema solo lo guarda; no calcula comisiones.',
-    }
-
-    def get_readonly_fields(self, request, obj=None):
-        return ('codigo',) if obj else ()
 
 
 def _textos_contrasena(form):

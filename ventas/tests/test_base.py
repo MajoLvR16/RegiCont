@@ -25,8 +25,8 @@ class BaseTests(TestCase):
 
     def test_menu(self):
         menu = navegacion(RequestFactory().get('/'))['MENU']
-        self.assertEqual(len(menu), 5)  # Cubiertas no aparece sin permiso
-        self.assertEqual(len([i for i in menu if not i['habilitado']]), 2)
+        self.assertEqual(len(menu), 4)  # Cubiertas y Promotores no aparecen sin permiso
+        self.assertEqual(len([i for i in menu if not i['habilitado']]), 1)
 
     def test_logo_existe(self):
         self.assertIsNotNone(finders.find('img/logo.png'))
