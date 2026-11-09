@@ -47,6 +47,7 @@ a.nav-item:hover { background: var(--fondo); }
 /* Ítem activo según el data-menu del body (lo define el bloque menu_activo) */
 body[data-menu="digitacion"] a[data-clave="digitacion"],
 body[data-menu="totales"] a[data-clave="totales"],
+body[data-menu="consulta"] a[data-clave="consulta"],
 body[data-menu="administracion"] a[data-clave="administracion"] {
   background: var(--azul-claro); color: var(--azul-oscuro); font-weight: 700;
 }
@@ -156,3 +157,13 @@ fieldset:disabled { opacity: .5; }
 .pie-total .num { color: var(--azul); }
 
 .tarjeta + .tarjeta { margin-top: 16px; }
+
+/* Consulta histórica */
+.rejilla-consulta { display: grid; grid-template-columns: repeat(3, 1fr) auto; gap: 14px; align-items: end; }
+.rejilla-consulta .campo { margin-bottom: 0; }
+.enlace-limpiar { margin-left: 12px; }
+.aviso--info { background: var(--azul-claro); border-color: var(--borde); color: var(--azul-oscuro); }
+.paginacion { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 12px; }
+.tabla-ancha { overflow-x: auto; }
+@media (max-width: 900px) { .rejilla-consulta { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 560px) { .rejilla-consulta { grid-template-columns: 1fr; } }

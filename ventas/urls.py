@@ -2,6 +2,7 @@ from django.urls import path
 from django.views.generic import RedirectView
 
 from ventas.views.acceso import AccesoController
+from ventas.views.consulta import ConsultaController
 from ventas.views.jugadas import JugadaController
 from ventas.views.totales import TotalController
 
@@ -14,6 +15,7 @@ urlpatterns = [
     path('digitacion/', JugadaController.Pantalla.as_view(), name='digitacion'),
     path('digitacion/jugadas/', JugadaController.Registrar.as_view(), name='registrar_jugada'),
     path('digitacion/jugadas/hoy/', JugadaController.ListarHoy.as_view(), name='jugadas_hoy'),
+    path('consulta/', ConsultaController.Pantalla.as_view(), name='consulta'),
     path('totales/', TotalController.Consolidado.as_view(), name='totales'),
     path('totales/datos/', TotalController.Datos.as_view(), name='totales_datos'),
 ]

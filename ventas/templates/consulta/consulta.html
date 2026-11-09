@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% load formato %}
+{% block titulo %}Consulta histórica · RegiCont{% endblock %}
+{% block menu_activo %}consulta{% endblock %}
+{% block titulo_pagina %}Consulta histórica{% endblock %}
+{% block subtitulo_pagina %}Consulte las jugadas de una jornada por fecha, promotor o número.{% endblock %}
+{% block contenido %}
+<section class="tarjeta">
+  <form method="get" action="{% url 'ventas:consulta' %}" novalidate>
+    <div class="rejilla-consulta">
+      <div class="campo{% if form.fecha.errors %} campo--error{% endif %}">
+        <label for="{{ form.fecha.id_for_label }}">Fecha</label>
+        {{ form.fecha }}
+        {% for e in form.fecha.errors %}<div class="mensaje-error" role="alert">{{ e }}</div>{% endfor %}
+      </div>
+      <div class="campo{% if form.promotor.errors %} campo--error{% endif %}">
+        <label for="{{ form.promotor.id_for_label }}">Promotor</label>
+        {{ form.promotor }}
+        {% for e in form.promotor.errors %}<div class="mensaje-error" role="alert">{{ e }}</div>{% endfor %}
+      </div>
+      <div class="campo{% if form.numero.errors %} campo--error{% endif %}">
+        <label for="{{ form.numero.id_for_label }}">Número · 3 o 4 cifras</label>
+        {{ form.numero }}
+        {% for e in form.numero.errors %}<div class="mensaje-error" role="alert">{{ e }}</div>{% endfor %}
+      </div>
+      <div>
+        <button type="submit" class="btn btn--primario">Consultar</button>
+        <a class="enlace-limpiar texto-gris" href="{% url 'ventas:consulta' %}">Limpiar filtros</a>
+      </div>
+    </div>
+  </form>
+</section>
+{% if consultado %}
+{% if sin_datos %}<p class="aviso aviso--info" role="status" style="margin-top:16px">{{ sin_datos }}</p>{% endif %}
+{% if cantidad %}
+<section class="tarjeta">
+  <div class="tarjeta__cabecera">
+    <h2>Jornada del {{ fecha|date:"j \d\e F \d\e Y" }}</h2>
+    <span class="texto-gris">{{ cantidad }} jugada{{ cantidad|pluralize }}</span>
+  </div>
+  <div class="total-grande">{{ total|pesos }}</div>
+</section>
+{% if numero %}
+<section class="tarjeta">
+  <div class="tarjeta__cabecera"><h2>Número {{ numero }}</h2></div>
+  <p>Total parcial acumulado: <strong>{{ total_parcial|pesos }}</strong> en {{ cantidad }} jugada{{ cantidad|pluralize }}</p>
+</section>
+{% endif %}
+<section class="tarjeta tabla-ancha">
+  <div class="tarjeta__cabecera"><h2>Desglose por promotor</h2></div>
+  <table class="tabla">
+    <thead><tr><th>Promotor</th><th class="num">Jugadas</th><th class="num">Total</th></tr></thead>
+    <tbody>
+      {% for d in desglose %}<tr><td>{{ d.promotor }}</td><td class="num">{{ d.cantidad }}</td><td class="num">{{ d.total|pesos }}</td></tr>{% endfor %}
+    </tbody>
+    <tfoot class="pie-total"><tr><td>Total</td><td class="num">{{ cantidad }}</td><td class="num">{{ total|pesos }}</td></tr></tfoot>
+  </table>
+</section>
+<section class="tarjeta tabla-ancha">
+  <div class="tarjeta__cabecera"><h2>Jugadas</h2></div>
+  <table class="tabla">
+    <thead><tr><th>Hora</th><th>Número</th><th class="num">Valor</th><th>Promotor</th><th>Registró</th></tr></thead>
+    <tbody>
+      {% for j in pagina %}<tr><td>{{ j.hora|time:"H:i:s" }}</td><td><strong>{{ j.numero }}</strong></td><td class="num">{{ j.valor|pesos }}</td><td>{{ j.promotor }}</td><td>{{ j.usuario.get_username }}</td></tr>{% endfor %}
+    </tbody>
+  </table>
+  <div class="paginacion">
+    {% if pagina.has_previous %}<a href="?{% if filtros %}{{ filtros }}&amp;{% endif %}pagina={{ pagina.previous_page_number }}">Anterior</a>{% else %}<span class="texto-gris">Anterior</span>{% endif %}
+    <span class="texto-gris">Página {{ pagina.number }} de {{ pagina.paginator.num_pages }}</span>
+    {% if pagina.has_next %}<a href="?{% if filtros %}{{ filtros }}&amp;{% endif %}pagina={{ pagina.next_page_number }}">Siguiente</a>{% else %}<span class="texto-gris">Siguiente</span>{% endif %}
+  </div>
+</section>
+{% endif %}
+{% endif %}
+{% endblock %}

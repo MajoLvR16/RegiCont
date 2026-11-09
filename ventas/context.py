@@ -4,7 +4,7 @@ from django.urls import NoReverseMatch, reverse
 _ITEMS = [
     ('digitacion', 'Digitación', 'ventas:digitacion'),
     ('totales', 'Totales', 'ventas:totales'),
-    ('consulta', 'Consulta', None),
+    ('consulta', 'Consulta', 'ventas:consulta'),
     ('cubiertas', 'Cubiertas', None),
     ('promotores', 'Promotores', None),
     ('cierre', 'Cierre diario', None),
