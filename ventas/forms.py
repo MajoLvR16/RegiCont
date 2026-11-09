@@ -40,3 +40,14 @@ class FormularioConsulta(forms.Form):
         self.fields['fecha'].initial = hoy
         self.fields['promotor'].choices = [('', 'Todos los promotores')] + [
             (p.codigo, str(p)) for p in Promotor.objects.all()]
+
+
+class FormularioFechaCubierta(forms.Form):
+    fecha = forms.DateField(
+        label='Fecha',
+        error_messages={'required': 'Seleccione una fecha válida', 'invalid': 'Seleccione una fecha válida'},
+        widget=forms.DateInput(attrs={'type': 'date'}, format='%Y-%m-%d'))
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['fecha'].widget.attrs['max'] = timezone.localdate().isoformat()
