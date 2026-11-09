@@ -6,7 +6,7 @@ from django.contrib.auth.models import Group
 from django.urls import reverse
 from django.utils.html import format_html
 
-from .models import Jugada, Loteria, Promotor, TotalNumero, Usuario
+from .models import Jugada, Promotor, TotalNumero, Usuario
 
 
 def tiene_acceso_admin(request):
@@ -67,7 +67,7 @@ class SoloLecturaMixin(SoloAdministradorMixin):
 
 
 class SinBorrarMixin:
-    # Las loterías y usuarios se desactivan; borrar no aplica porque tienen
+    # Los promotores y usuarios no se borran; borrar no aplica porque tienen
     # jugadas asociadas.
     actions = None
 
@@ -94,19 +94,6 @@ class TextosClarosMixin:
         if level == messages.SUCCESS and obj is not None and vista.endswith(('_add', '_change')):
             message = f'Listo: se guardó {obj._meta.verbose_name} «{obj}».'
         super().message_user(request, message, level, extra_tags, fail_silently)
-
-
-@admin.register(Loteria)
-class LoteriaAdmin(SinBorrarMixin, SoloAdministradorMixin, TextosClarosMixin, admin.ModelAdmin):
-    list_display = ('nombre', 'activa')
-    list_editable = ('activa',)
-    search_fields = ('nombre',)
-    etiquetas = {'nombre': 'Nombre', 'activa': 'Activa'}
-    ayudas = {
-        'nombre': 'Nombre con el que aparece al digitar, por ejemplo Bogotá. No se puede repetir.',
-        'activa': 'Si está marcada, se puede elegir al digitar jugadas. Desmárquela para dejar de '
-                  'ofrecerla; sus jugadas anteriores se conservan.',
-    }
 
 
 @admin.register(Promotor)
@@ -192,11 +179,11 @@ class UsuarioAdmin(SinBorrarMixin, SoloAdministradorMixin, TextosClarosMixin, Us
 
 @admin.register(Jugada)
 class JugadaAdmin(SoloLecturaMixin, admin.ModelAdmin):
-    list_display = ('fecha', 'hora', 'numero', 'loteria', 'promotor', 'valor', 'usuario')
-    list_filter = ('fecha', 'loteria')
+    list_display = ('fecha', 'hora', 'numero', 'promotor', 'valor', 'usuario')
+    list_filter = ('fecha',)
     search_fields = ('numero',)
     date_hierarchy = 'fecha'
-    list_select_related = ('loteria', 'promotor', 'usuario')
+    list_select_related = ('promotor', 'usuario')
 
 
 @admin.register(TotalNumero)

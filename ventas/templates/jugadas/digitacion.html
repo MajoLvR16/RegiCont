@@ -10,23 +10,20 @@
     <h2>Nueva jugada</h2>
     <span class="texto-gris">Todos los campos son obligatorios</span>
   </div>
-  {% if not loterias %}
-  <p class="aviso" role="alert">No hay loterías activas; el administrador debe registrarlas</p>
-  {% endif %}
   <form id="form-jugada" method="post" novalidate data-url-registrar="{% url 'ventas:registrar_jugada' %}" data-url-hoy="{% url 'ventas:jugadas_hoy' %}" data-usuario="{{ user.get_username }}">
     {% csrf_token %}
-    <fieldset class="sin-borde"{% if not loterias %} disabled{% endif %}>
+    <fieldset class="sin-borde">
       <div class="rejilla-jugada">
+        <div class="campo">
+          <label>Fecha</label>
+          <div class="campo-fecha" id="fecha-jornada">{{ fecha_jornada|date:"j \d\e F \d\e Y" }}</div>
+          <div class="texto-gris texto-chico">La fecha la asigna el sistema</div>
+        </div>
         <div class="campo">
           <label for="promotor">Código de promotor</label>
           <input id="promotor" list="lista-promotores" autocomplete="off">
           <datalist id="lista-promotores">{% for p in promotores %}<option value="{{ p.codigo }}" label="{{ p }}">{% endfor %}</datalist>
           <div class="mensaje-error" id="error-promotor" role="alert"></div>
-        </div>
-        <div class="campo">
-          <label for="loteria">Lotería</label>
-          <select id="loteria">{% for l in loterias %}<option value="{{ l.id_loteria }}">{{ l.nombre }}</option>{% endfor %}</select>
-          <div class="mensaje-error" id="error-loteria" role="alert"></div>
         </div>
         <div class="campo">
           <label for="numero">Número · 3 o 4 cifras</label>
@@ -60,12 +57,12 @@
     <span id="estado" class="etiqueta-verde" hidden>✓ Registro actualizado</span>
   </div>
   <table class="tabla" id="tabla-jugadas">
-    <thead><tr><th>Hora</th><th>Número</th><th>Lotería</th><th class="num">Valor</th><th>Promotor</th></tr></thead>
+    <thead><tr><th>Hora</th><th>Número</th><th class="num">Valor</th><th>Promotor</th></tr></thead>
     <tbody>
     {% for j in jugadas %}
-      <tr><td>{{ j.hora|time:"H:i:s" }}</td><td><strong>{{ j.numero }}</strong></td><td>{{ j.loteria }}</td><td class="num">{{ j.valor|pesos }}</td><td>{{ j.promotor }}</td></tr>
+      <tr><td>{{ j.hora|time:"H:i:s" }}</td><td><strong>{{ j.numero }}</strong></td><td class="num">{{ j.valor|pesos }}</td><td>{{ j.promotor }}</td></tr>
     {% empty %}
-      <tr><td colspan="5">Aún no hay jugadas hoy</td></tr>
+      <tr><td colspan="4">Aún no hay jugadas hoy</td></tr>
     {% endfor %}
     </tbody>
   </table>

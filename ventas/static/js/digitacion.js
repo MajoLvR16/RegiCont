@@ -3,7 +3,7 @@
   var form = document.getElementById('form-jugada');
   if (!form) { return; }
   var K = 'regicont.' + form.getAttribute('data-usuario');
-  var campos = ['promotor', 'loteria', 'numero', 'valor'];
+  var campos = ['promotor', 'numero', 'valor'];
   var el = {};
   campos.forEach(function (c) { el[c] = document.getElementById(c); });
   var aviso = document.getElementById('aviso-envio');
@@ -36,7 +36,6 @@
   function error(c) {
     var v = el[c].value.trim();
     if (c === 'promotor') { return codigos.indexOf(v) < 0 ? 'Código de promotor no existe' : ''; }
-    if (c === 'loteria') { return v === '' ? 'Seleccione una lotería activa' : ''; }
     if (c === 'numero') { return /^[0-9]{3,4}$/.test(v) ? '' : 'El número debe tener 3 o 4 cifras'; }
     var d = soloDigitos(v);
     if (d === '') { return 'Digite un valor válido'; }
@@ -81,18 +80,18 @@
         while (tb.firstChild) { tb.removeChild(tb.firstChild); }
         d.jugadas.forEach(function (j) {
           var tr = document.createElement('tr');
-          [j.hora, j.numero, j.loteria, j.valor, j.promotor].forEach(function (t, n) {
+          [j.hora, j.numero, j.valor, j.promotor].forEach(function (t, n) {
             var td = document.createElement('td');
             if (n === 1) { var s = document.createElement('strong'); s.textContent = t; td.appendChild(s); }
             else { td.textContent = t; }
-            if (n === 3) { td.className = 'num'; }
+            if (n === 2) { td.className = 'num'; }
             tr.appendChild(td);
           });
           tb.appendChild(tr);
         });
         if (!d.jugadas.length) {
           var f = document.createElement('tr'), c = document.createElement('td');
-          c.colSpan = 5; c.textContent = 'Aún no hay jugadas hoy';
+          c.colSpan = 4; c.textContent = 'Aún no hay jugadas hoy';
           f.appendChild(c); tb.appendChild(f);
         }
       })
@@ -116,11 +115,11 @@
     if (enviando) { return; }
     if (!validarTodo()) { return; }
     var datos = {
-      promotor: el.promotor.value.trim(), loteria: el.loteria.value,
+      promotor: el.promotor.value.trim(),
       numero: el.numero.value.trim(), valor: soloDigitos(el.valor.value)
     };
     var p = leer('.pendiente');
-    var igual = p && p.payload && p.payload.promotor === datos.promotor && p.payload.loteria === datos.loteria &&
+    var igual = p && p.payload && p.payload.promotor === datos.promotor &&
       p.payload.numero === datos.numero && p.payload.valor === datos.valor;
     datos.token_envio = igual ? p.payload.token_envio : uuid();
     escribir('.pendiente', { payload: datos });
@@ -170,16 +169,15 @@
       if (validar(c)) { el[siguiente].focus(); }
     });
   }
-  enter('promotor', 'loteria'); enter('loteria', 'numero'); enter('numero', 'valor'); enter('valor');
+  enter('promotor', 'numero'); enter('numero', 'valor'); enter('valor');
 
   campos.forEach(function (c) {
     el[c].addEventListener('input', function () { marcar(c, ''); });
   });
-  function guardarSeleccion() { escribir('.seleccion', { promotor: el.promotor.value, loteria: el.loteria.value }); }
+  function guardarSeleccion() { escribir('.seleccion', { promotor: el.promotor.value }); }
   function guardarBorrador() { escribir('.borrador', { numero: el.numero.value, valor: el.valor.value }); }
   ['input', 'change'].forEach(function (ev) {
     el.promotor.addEventListener(ev, guardarSeleccion);
-    el.loteria.addEventListener(ev, guardarSeleccion);
   });
   el.numero.addEventListener('input', guardarBorrador);
   el.valor.addEventListener('input', guardarBorrador);
@@ -201,12 +199,10 @@
   var sel = leer('.seleccion'), bor = leer('.borrador'), pen = leer('.pendiente');
   if (sel) {
     if (sel.promotor) { el.promotor.value = sel.promotor; }
-    if (sel.loteria && el.loteria.querySelector('option[value="' + sel.loteria + '"]')) { el.loteria.value = sel.loteria; }
   }
   if (bor) { el.numero.value = bor.numero || ''; el.valor.value = bor.valor || ''; }
   if (pen && pen.payload) {
     el.promotor.value = pen.payload.promotor; el.numero.value = pen.payload.numero; el.valor.value = pen.payload.valor;
-    if (el.loteria.querySelector('option[value="' + pen.payload.loteria + '"]')) { el.loteria.value = pen.payload.loteria; }
     mostrarAviso('Hay una jugada sin confirmar por el servidor. Revísela y pulse Reintentar.', true);
   }
   (el.promotor.value ? el.numero : el.promotor).focus();

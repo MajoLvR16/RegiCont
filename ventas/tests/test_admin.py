@@ -1,7 +1,8 @@
+from django.contrib import admin
 from django.test import TestCase
 from django.urls import reverse
 
-from ventas.models import Jugada, Loteria, Promotor, Usuario
+from ventas.models import Jugada, Promotor, Usuario
 
 R = Usuario.Rol
 
@@ -11,14 +12,13 @@ class AdminBase(TestCase):
     def setUpTestData(cls):
         cls.adm = Usuario.objects.create_user('doctor', password='clave-123', rol=R.ADMINISTRADOR, first_name='Doctor')
         cls.ope = Usuario.objects.create_user('arturo', password='clave-123', first_name='Arturo')
-        cls.lot = Loteria.objects.create(nombre='Bogotá')
         cls.pro = Promotor.objects.create(codigo='502', nombre='Ana')
 
 
 class AccesoTests(AdminBase):
     def test_operador_no_entra(self):
         self.client.force_login(self.ope)
-        for url in ('/admin/', '/admin/ventas/loteria/', '/admin/ventas/usuario/'):
+        for url in ('/admin/', '/admin/ventas/promotor/', '/admin/ventas/usuario/'):
             r = self.client.get(url)
             self.assertEqual(r.status_code, 302, url)
             self.assertIn('/admin/login/', r['Location'])
@@ -42,10 +42,10 @@ class AccesoTests(AdminBase):
     def test_portada(self):
         self.client.force_login(self.adm)
         r = self.client.get('/admin/')
-        for t in ('Loterías', 'Promotores', 'Usuarios', 'img/logo.png', 'RegiCont · Administración',
+        for t in ('Promotores', 'Usuarios', 'img/logo.png', 'RegiCont · Administración',
                   'Sesión de', 'Volver a RegiCont'):
             self.assertContains(r, t)
-        for t in ('Jugadas', 'Totales', 'Grupos'):
+        for t in ('Jugadas', 'Totales', 'Grupos', 'Loterías'):
             self.assertNotContains(r, t)
 
     def test_jugadas_y_totales_solo_lectura(self):
@@ -57,7 +57,7 @@ class AccesoTests(AdminBase):
 
     def test_sin_borrar(self):
         self.client.force_login(self.adm)
-        for url in (f'/admin/ventas/loteria/{self.lot.pk}/delete/', '/admin/ventas/promotor/502/delete/',
+        for url in ('/admin/ventas/promotor/502/delete/',
                     f'/admin/ventas/usuario/{self.ope.pk}/delete/'):
             self.assertEqual(self.client.get(url).status_code, 403, url)
 
@@ -100,15 +100,33 @@ class FormulariosTests(AdminBase):
                          {'password1': 'Otra-clave-77', 'password2': 'Otra-clave-77'})
         self.assertTrue(Usuario.objects.get(pk=u.pk).has_usable_password())
 
-    def test_crear_loteria(self):
-        self.assertContains(self.client.get('/admin/ventas/loteria/add/'), 'Si está marcada, se puede elegir')
-        r = self.client.post('/admin/ventas/loteria/add/', {'nombre': 'Cruz <Roja>', 'activa': 'on'}, follow=True)
-        self.assertContains(r, 'Listo: se guardó lotería «Cruz &lt;Roja&gt;».')
-
     def test_crear_promotor(self):
         r = self.client.post('/admin/ventas/promotor/add/', {
             'codigo': '777', 'nombre': 'Luis', 'tipo': 'Vendedor', 'parametro_comision': '5'}, follow=True)
         self.assertContains(r, 'Listo: se guardó promotor «777».')
+
+    def test_mensajes_sin_fue(self):
+        pr = '/admin/ventas/promotor/'
+        us = '/admin/ventas/usuario/'
+        flujos = [
+            (pr + 'add/', {'codigo': '778', 'nombre': 'Eva', 'tipo': 'Vendedor', 'parametro_comision': '1'}),
+            (pr + '502/change/', {'nombre': 'Ana María', 'tipo': 'Promotor', 'parametro_comision': '2'}),
+            (us + 'add/', {'username': 'nuevo', 'password1': 'Clave-segura-93',
+                           'password2': 'Clave-segura-93', 'rol': 'Operador'}),
+            (f'{us}{self.ope.pk}/change/', {'username': 'arturo', 'first_name': 'Arturo', 'rol': 'Operador',
+                                            'is_active': 'on'}),
+            (f'{us}{self.ope.pk}/password/', {'password1': 'Otra-clave-77', 'password2': 'Otra-clave-77'}),
+        ]
+        for modelo in (Promotor, Usuario):
+            ma = admin.site._registry[modelo]
+            self.assertFalse(ma.list_editable, ma)
+            self.assertFalse(ma.actions, ma)
+        for url, datos in flujos:
+            r = self.client.post(url, datos, follow=True)
+            textos = [str(m) for m in r.context['messages']]
+            self.assertTrue(textos, url)
+            for t in textos:
+                self.assertNotIn('fué', t)
 
     def test_propio_usuario_no_cambia_rol_ni_activo(self):
         self.client.post(f'/admin/ventas/usuario/{self.adm.pk}/change/', {
