@@ -6,6 +6,8 @@ Sistema web de registro y control de ventas de chance para "Conexión Siglo XXI"
 
 Documentación de la Iteración 1 (alcance, trazabilidad, decisiones y pruebas de aceptación): [docs/ITERACION1.md](docs/ITERACION1.md).
 
+Documentación de la Iteración 2 (Consulta, Cubiertas, Promotores, retiro de la lotería, pruebas y rendimiento): [docs/ITERACION2.md](docs/ITERACION2.md).
+
 ## Instalación en Windows 11
 
 1. Cree el entorno virtual:
@@ -60,15 +62,15 @@ python manage.py runserver
 
 | Rol | Acceso |
 |---|---|
-| Administrador | Digitación, Totales y Administración de Django (`/admin/`) |
-| Operador | Digitación y Totales |
+| Administrador | Digitación, Totales, Consulta, Cubiertas, Promotores y Administración de Django (`/admin/`, solo Usuarios) |
+| Operador | Digitación, Totales y Consulta |
 
 El rol lo asigna el Administrador desde Administración, en Usuarios. Usuarios iniciales: `doctor` (Administrador), `arturo` y `custodia` (Operadores).
 
 ## Registrar promotores
 
-1. Ingrese como `doctor` y abra Administración (`/admin/`).
-2. Promotores → Agregar promotor. La comisión es un parámetro editable que solo se almacena.
+1. Ingrese como `doctor` y abra Promotores en el menú (`/promotores/`).
+2. Seleccione Nuevo promotor. La comisión es un parámetro editable que solo se almacena. Los promotores no se borran: se desactivan, y un promotor inactivo no se puede digitar.
 
 El comando inicial carga siete promotores y tres usuarios.
 
@@ -123,7 +125,7 @@ Sirva la carpeta `staticfiles/` con el servidor web (en la ruta `/static/`) y ej
 
 - `config/`: configuración (`settings/base.py`, `dev.py`, `prod.py`) y URLs.
 - `ventas/models.py`, `services.py`: modelos y lógica de negocio.
-- `ventas/views/`: controladores (acceso, jugadas, totales).
+- `ventas/views/`: controladores (acceso, jugadas, totales, consulta, cubiertas, promotores).
 - `ventas/templates/`, `ventas/static/`: plantillas, CSS y JS.
 - `ventas/management/commands/`: comandos de datos iniciales y de prueba.
 - `ventas/tests/`: pruebas automáticas.
