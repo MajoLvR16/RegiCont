@@ -6,21 +6,6 @@ from django.db import models
 from django.db.models import F, Q
 
 
-class Loteria(models.Model):
-    id_loteria = models.AutoField(primary_key=True)
-    nombre = models.CharField('nombre', max_length=60, unique=True)
-    activa = models.BooleanField('activa', default=True)
-
-    class Meta:
-        db_table = 'loteria'
-        ordering = ['nombre']
-        verbose_name = 'lotería'
-        verbose_name_plural = 'loterías'
-
-    def __str__(self):
-        return self.nombre
-
-
 class Promotor(models.Model):
     class Tipo(models.TextChoices):
         PROMOTOR = 'Promotor', 'Promotor'
@@ -85,8 +70,6 @@ class Jugada(models.Model):
     )
     valor = models.PositiveIntegerField('valor', validators=[MinValueValidator(500, 'El valor mínimo es $500'),
                                                             MaxValueValidator(2147483647, 'El valor es demasiado alto')])
-    loteria = models.ForeignKey(Loteria, on_delete=models.PROTECT, db_column='id_loteria',
-                                related_name='jugadas', verbose_name='lotería')
     promotor = models.ForeignKey(Promotor, on_delete=models.PROTECT, db_column='codigo_promotor',
                                  related_name='jugadas', verbose_name='promotor')
     usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, db_column='id_usuario',

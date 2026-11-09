@@ -6,7 +6,7 @@ from django.test import TestCase
 from django.test.utils import CaptureQueriesContext
 from django.utils import timezone
 
-from ventas.models import Jugada, Loteria, Promotor, TotalNumero, Usuario
+from ventas.models import Jugada, Promotor, TotalNumero, Usuario
 from ventas.services import RegistroJugadaService, ReporteService
 
 
@@ -17,14 +17,13 @@ class TotalesTests(TestCase):
         cls.adm = Usuario.objects.create_user('adm', password='x', rol='Administrador')
         Promotor.objects.create(codigo='501', nombre='Ana')
         Promotor.objects.create(codigo='502', nombre='Luis')
-        cls.lot = Loteria.objects.create(nombre='Triple')
         cls.hoy = timezone.localdate()
 
     def tot(self, numero, monto, fecha=None):
         TotalNumero.objects.create(fecha=fecha or self.hoy, numero=numero, monto_acumulado=monto)
 
     def reg(self, p, numero, valor):
-        return RegistroJugadaService.registrar(p, self.lot.id_loteria, numero, valor, self.op)
+        return RegistroJugadaService.registrar(p, numero, valor, self.op)
 
     def test_acceso(self):
         for u in ('/totales/', '/totales/datos/'):
@@ -89,7 +88,7 @@ class TotalesTests(TestCase):
         hora = timezone.localtime().time()
         Jugada.objects.bulk_create([
             Jugada(fecha=self.hoy, hora=hora, numero=f'{i % 1300:04d}', valor=1000,
-                   loteria_id=self.lot.id_loteria, promotor_id='501', usuario=self.op)
+                   promotor_id='501', usuario=self.op)
             for i in range(2600)])
         TotalNumero.objects.bulk_create([
             TotalNumero(fecha=self.hoy, numero=f'{i:04d}', monto_acumulado=2000) for i in range(1300)])

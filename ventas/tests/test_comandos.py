@@ -7,7 +7,7 @@ from django.core.management.base import CommandError
 from django.db.models import Sum
 from django.test import TestCase, override_settings
 
-from ventas.models import Jugada, Loteria, Promotor, TotalNumero, Usuario
+from ventas.models import Jugada, Promotor, TotalNumero, Usuario
 
 
 def correr(nombre, *args):
@@ -23,7 +23,6 @@ def suma(modelo, campo):
 class CargarDatosInicialesTests(TestCase):
     def test_crea_catalogos_y_usuarios(self):
         salida = correr('cargar_datos_iniciales')
-        self.assertEqual(Loteria.objects.count(), 3)
         self.assertEqual(Promotor.objects.count(), 7)
         self.assertEqual(str(Promotor.objects.get(codigo='001')), '001-Oficina')
         p = Promotor.objects.get(codigo='502')
@@ -40,15 +39,13 @@ class CargarDatosInicialesTests(TestCase):
     def test_idempotente_y_no_pisa(self):
         correr('cargar_datos_iniciales')
         claves = dict(Usuario.objects.values_list('username', 'password'))
-        Loteria.objects.filter(nombre='Bogotá').update(activa=False)
         Promotor.objects.filter(codigo='502').update(nombre='Otro')
         salida = correr('cargar_datos_iniciales')
-        self.assertEqual((Loteria.objects.count(), Promotor.objects.count(), Usuario.objects.count()), (3, 7, 3))
+        self.assertEqual((Promotor.objects.count(), Usuario.objects.count()), (7, 3))
         self.assertEqual(dict(Usuario.objects.values_list('username', 'password')), claves)
         self.assertIn('doctor: ya existe, contraseña sin cambios', salida)
         self.assertNotIn(' / ', salida)
         self.assertNotIn('Guarde', salida)
-        self.assertFalse(Loteria.objects.get(nombre='Bogotá').activa)
         self.assertEqual(Promotor.objects.get(codigo='502').nombre, 'Otro')
 
 

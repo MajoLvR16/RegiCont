@@ -3,7 +3,7 @@ import datetime
 from django.db import IntegrityError, transaction
 from django.test import TestCase
 
-from ventas.models import Jugada, Loteria, Promotor, TotalNumero, Usuario
+from ventas.models import Jugada, Promotor, TotalNumero, Usuario
 
 HOY = datetime.date(2026, 1, 5)
 MSG_NUMERO = 'El número debe tener 3 o 4 cifras'
@@ -12,13 +12,12 @@ MSG_NUMERO = 'El número debe tener 3 o 4 cifras'
 class JugadaTests(TestCase):
     @classmethod
     def setUpTestData(cls):
-        cls.lot = Loteria.objects.create(nombre='Medellín')
         cls.pro = Promotor.objects.create(codigo='502', nombre='Ana')
         cls.usr = Usuario.objects.create_user('op', password='x')
 
     def jugada(self, numero='0742', valor=500):
         return Jugada(fecha=HOY, hora=datetime.time(10, 0), numero=numero, valor=valor,
-                      loteria=self.lot, promotor=self.pro, usuario=self.usr)
+                      promotor=self.pro, usuario=self.usr)
 
     def test_validas_conservan_ceros(self):
         for n in ('0742', '742'):
@@ -98,12 +97,13 @@ class AdminTests(TestCase):
 
     def test_administrador(self):
         self.client.force_login(self.adm)
-        self.assertEqual(self.client.get('/admin/ventas/loteria/').status_code, 200)
+        self.assertEqual(self.client.get('/admin/ventas/promotor/').status_code, 200)
         self.assertEqual(self.client.get('/admin/ventas/usuario/add/').status_code, 200)
         self.assertEqual(self.client.get(f'/admin/ventas/usuario/{self.ope.pk}/change/').status_code, 200)
-        r = self.client.post('/admin/ventas/loteria/add/', {'nombre': 'Cruz Roja', 'activa': 'on'})
+        r = self.client.post('/admin/ventas/promotor/add/', {
+            'codigo': '700', 'nombre': 'Cruz Roja', 'tipo': 'Promotor', 'parametro_comision': '0'})
         self.assertEqual(r.status_code, 302)
-        self.assertTrue(Loteria.objects.filter(nombre='Cruz Roja').exists())
+        self.assertTrue(Promotor.objects.filter(codigo='700').exists())
         r = self.client.post('/admin/ventas/usuario/add/', {
             'username': 'nuevo', 'password1': 'Clave-segura-93', 'password2': 'Clave-segura-93',
             'rol': 'Operador'})
@@ -112,7 +112,7 @@ class AdminTests(TestCase):
 
     def test_operador_redirigido(self):
         self.client.force_login(self.ope)
-        r = self.client.get('/admin/ventas/loteria/')
+        r = self.client.get('/admin/ventas/promotor/')
         self.assertEqual(r.status_code, 302)
         self.assertIn('/admin/login/', r.url)
 

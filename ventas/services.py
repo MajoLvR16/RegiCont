@@ -4,7 +4,7 @@ from django.core.exceptions import ValidationError
 from django.db import IntegrityError, transaction
 from django.utils import timezone
 
-from ventas.models import Jugada, Loteria, Promotor, TotalNumero
+from ventas.models import Jugada, Promotor, TotalNumero
 
 
 class ErrorValidacion(Exception):
@@ -15,7 +15,7 @@ class ErrorValidacion(Exception):
 
 class RegistroJugadaService:
     @staticmethod
-    def registrar(codigo_promotor, id_loteria, numero, valor, usuario, token_envio=None):
+    def registrar(codigo_promotor, numero, valor, usuario, token_envio=None):
         errores = {}
         if token_envio not in (None, ''):
             try:
@@ -28,14 +28,6 @@ class RegistroJugadaService:
         promotor = Promotor.objects.filter(codigo=str(codigo_promotor).strip()).first()
         if promotor is None:
             errores['promotor'] = 'Código de promotor no existe'
-        try:
-            if isinstance(id_loteria, bool):
-                raise TypeError
-            loteria = Loteria.objects.filter(id_loteria=int(id_loteria), activa=True).first()
-        except (TypeError, ValueError, OverflowError):
-            loteria = None
-        if loteria is None:
-            errores['loteria'] = 'Seleccione una lotería activa'
 
         if isinstance(valor, int) and not isinstance(valor, bool):
             valor_int = valor
@@ -48,9 +40,9 @@ class RegistroJugadaService:
         ahora = timezone.localtime()
         fecha, hora = ahora.date(), ahora.time()
         numero = numero if isinstance(numero, str) else ''
-        # Valida numero y valor con los validadores del modelo, aunque falten promotor o lotería.
+        # Valida numero y valor con los validadores del modelo, aunque falte el promotor.
         jugada = Jugada(fecha=fecha, hora=hora, numero=numero, valor=valor_int,
-                        loteria=loteria, promotor=promotor, usuario=usuario, token_envio=token_envio)
+                        promotor=promotor, usuario=usuario, token_envio=token_envio)
         for campo in ('numero', 'valor') if valor_int is not None else ('numero',):
             try:
                 Jugada._meta.get_field(campo).clean(getattr(jugada, campo), jugada)
@@ -80,7 +72,7 @@ class RegistroJugadaService:
     @staticmethod
     def jugadas_de_hoy(limite):
         return (Jugada.objects.filter(fecha=timezone.localdate())
-                .select_related('loteria', 'promotor').order_by('-id_jugada')[:limite])
+                .select_related('promotor').order_by('-id_jugada')[:limite])
 
 
 class ReporteService:

@@ -4,8 +4,9 @@ import json
 from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.formats import date_format
 
-from ventas.models import Jugada, Loteria, Promotor, Usuario
+from ventas.models import Jugada, Promotor, Usuario
 from ventas.templatetags.formato import formato_pesos
 
 
@@ -13,8 +14,6 @@ class DigitacionTests(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.user = Usuario.objects.create_user('op', password='x')
-        cls.loteria = Loteria.objects.create(nombre='Triple')
-        Loteria.objects.create(nombre='Vieja', activa=False)
         Promotor.objects.create(codigo='502', nombre='Ana')
         Promotor.objects.create(codigo='001', nombre='Oficina', tipo='Oficina')
         cls.url = reverse('ventas:registrar_jugada')
@@ -26,7 +25,7 @@ class DigitacionTests(TestCase):
         return (client or self.client).post(self.url, json.dumps(datos), content_type='application/json')
 
     def valido(self, **kw):
-        d = {'promotor': '001', 'loteria': self.loteria.id_loteria, 'numero': '0742', 'valor': '5000'}
+        d = {'promotor': '001', 'numero': '0742', 'valor': '5000'}
         d.update(kw)
         return d
 
@@ -37,18 +36,30 @@ class DigitacionTests(TestCase):
     def test_pantalla_anonima(self):
         self.assertEqual(Client().get('/digitacion/').status_code, 302)
 
-    def test_pantalla_textos_y_loterias(self):
+    def test_pantalla_textos(self):
         r = self.client.get('/digitacion/')
-        for t in ('Nueva jugada', 'Agregar jugada', 'Jugadas de hoy', 'Triple',
+        for t in ('Nueva jugada', 'Agregar jugada', 'Jugadas de hoy',
                   'Los registros se consolidan automáticamente en Totales'):
             self.assertContains(r, t)
-        self.assertNotContains(r, 'Vieja')
-        self.assertNotContains(r, 'No hay loterías activas')
 
-    def test_sin_loterias(self):
-        Loteria.objects.update(activa=False)
-        self.assertContains(self.client.get('/digitacion/'),
-                            'No hay loterías activas; el administrador debe registrarlas')
+    def test_pantalla_sin_loteria_con_fecha(self):
+        r = self.client.get('/digitacion/')
+        self.assertNotContains(r, 'id="loteria"')
+        self.assertNotContains(r, 'Lotería')
+        self.assertContains(r, 'La fecha la asigna el sistema')
+        self.assertContains(r, 'id="fecha-jornada"')
+        self.assertNotContains(r, 'id="fecha"')
+        self.assertContains(r, date_format(timezone.localdate(), r'j \d\e F \d\e Y'))
+
+    def test_cinco_atajos(self):
+        r = self.client.get('/digitacion/')
+        for v in ('$500', '$1.000', '$5.000', '$10.000', '$20.000'):
+            self.assertContains(r, f'>{v}</button>')
+
+    def test_post_ignora_loteria_sobrante(self):
+        r = self.post(self.valido(loteria=99))
+        self.assertEqual(r.status_code, 201)
+        self.assertNotIn('loteria', r.json()['jugada'])
 
     def test_post_valido(self):
         r = self.post(self.valido())

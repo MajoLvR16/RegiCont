@@ -2,10 +2,11 @@ import json
 
 from django.conf import settings
 from django.http import JsonResponse
+from django.utils import timezone
 from django.views import View
 from django.views.generic import TemplateView
 
-from ventas.models import Loteria, Promotor
+from ventas.models import Promotor
 from ventas.permisos import RequierePermisoMixin
 from ventas.services import ErrorValidacion, RegistroJugadaService
 from ventas.templatetags.formato import formato_pesos
@@ -14,7 +15,7 @@ VALORES_RAPIDOS = [500, 1000, 5000, 10000, 20000]
 
 
 def _a_dict(j):
-    return {'hora': j.hora.strftime('%H:%M:%S'), 'numero': j.numero, 'loteria': j.loteria.nombre,
+    return {'hora': j.hora.strftime('%H:%M:%S'), 'numero': j.numero,
             'valor': formato_pesos(j.valor), 'promotor': str(j.promotor)}
 
 
@@ -26,7 +27,7 @@ class JugadaController:
         def get_context_data(self, **kwargs):
             ctx = super().get_context_data(**kwargs)
             ctx.update(
-                loterias=Loteria.objects.filter(activa=True),
+                fecha_jornada=timezone.localdate(),
                 promotores=Promotor.objects.all(),
                 jugadas=RegistroJugadaService.jugadas_de_hoy(settings.FILAS_JUGADAS_HOY),
                 filas=settings.FILAS_JUGADAS_HOY,
@@ -47,7 +48,7 @@ class JugadaController:
                 return JsonResponse({'ok': False, 'errores': {'general': 'Solicitud inválida'}}, status=400)
             try:
                 j = RegistroJugadaService.registrar(
-                    datos.get('promotor'), datos.get('loteria'), datos.get('numero'),
+                    datos.get('promotor'), datos.get('numero'),
                     datos.get('valor'), request.user, datos.get('token_envio'))
             except ErrorValidacion as e:
                 return JsonResponse({'ok': False, 'errores': e.errores}, status=400)

@@ -5,7 +5,7 @@ from unittest import mock
 from django.db import connection
 from django.test import TestCase, TransactionTestCase
 
-from ventas.models import Jugada, Loteria, Promotor, TotalNumero, Usuario
+from ventas.models import Jugada, Promotor, TotalNumero, Usuario
 from ventas.services import ErrorValidacion, RegistroJugadaService
 
 UTC = datetime.timezone.utc
@@ -16,8 +16,6 @@ AHORA = 'django.utils.timezone.now'
 def preparar(cls):
     cls.user = Usuario.objects.create_user('op', password='x')
     cls.promotor = Promotor.objects.create(codigo='502', nombre='Ana')
-    cls.loteria = Loteria.objects.create(nombre='Triple')
-    cls.inactiva = Loteria.objects.create(nombre='Vieja', activa=False)
 
 
 class ServicioTests(TestCase):
@@ -25,8 +23,8 @@ class ServicioTests(TestCase):
     def setUpTestData(cls):
         preparar(cls)
 
-    def reg(self, numero='0742', valor=5000, p='502', l=None, t=None):
-        return R(p, self.loteria.id_loteria if l is None else l, numero, valor, self.user, t)
+    def reg(self, numero='0742', valor=5000, p='502', t=None):
+        return R(p, numero, valor, self.user, t)
 
     def monto(self, numero):
         return TotalNumero.objects.get(numero=numero).monto_acumulado
@@ -66,20 +64,16 @@ class ServicioTests(TestCase):
 
     def test_errores(self):
         self.assertEqual(self.errores(p='999'), {'promotor': 'Código de promotor no existe'})
-        self.assertEqual(self.errores(l=self.inactiva.id_loteria), {'loteria': 'Seleccione una lotería activa'})
-        self.assertEqual(self.errores(l='x'), {'loteria': 'Seleccione una lotería activa'})
         self.assertEqual(self.errores(numero='12'), {'numero': 'El número debe tener 3 o 4 cifras'})
         self.assertEqual(self.errores(valor=499), {'valor': 'El valor mínimo es $500'})
         self.assertEqual(self.errores(valor='abc'), {'valor': 'Digite un valor válido'})
 
-    def test_valor_alto_y_loteria_rara(self):
+    def test_valor_alto(self):
         self.assertEqual(self.errores(valor=2147483648), {'valor': 'El valor es demasiado alto'})
-        for x in (True, float('inf')):
-            self.assertEqual(self.errores(l=x), {'loteria': 'Seleccione una lotería activa'})
 
     def test_varios_errores(self):
-        e = self.errores(p='999', l=0, numero='1', valor='abc')
-        self.assertEqual(set(e), {'promotor', 'loteria', 'numero', 'valor'})
+        e = self.errores(p='999', numero='1', valor='abc')
+        self.assertEqual(set(e), {'promotor', 'numero', 'valor'})
 
     def test_transaccion(self):
         with mock.patch.object(TotalNumero, 'acumular', side_effect=RuntimeError):
@@ -108,7 +102,7 @@ class ConcurrenciaTests(TransactionTestCase):
         def trabajo():
             try:
                 for _ in range(5):
-                    R('502', self.loteria.id_loteria, '0911', 500, self.user)
+                    R('502', '0911', 500, self.user)
             except Exception as e:
                 fallos.append(e)
             finally:
