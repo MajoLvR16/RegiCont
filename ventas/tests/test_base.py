@@ -26,7 +26,7 @@ class BaseTests(TestCase):
     def test_menu(self):
         menu = navegacion(RequestFactory().get('/'))['MENU']
         self.assertEqual(len(menu), 6)
-        self.assertEqual(len([i for i in menu if not i['habilitado']]), 4)
+        self.assertEqual(len([i for i in menu if not i['habilitado']]), 3)
 
     def test_logo_existe(self):
         self.assertIsNotNone(finders.find('img/logo.png'))

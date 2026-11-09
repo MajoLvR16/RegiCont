@@ -2,6 +2,7 @@ import uuid
 
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError, transaction
+from django.db.models import Count, Sum
 from django.utils import timezone
 
 from ventas.models import Jugada, Promotor, TotalNumero
@@ -83,3 +84,40 @@ class ReporteService:
                  .order_by('-monto_acumulado', 'numero').values_list('numero', 'monto_acumulado'))
         filas = [{'puesto': i, 'numero': n, 'monto': m} for i, (n, m) in enumerate(datos, 1)]
         return {'filas': filas, 'total': sum(f['monto'] for f in filas), 'cantidad': len(filas)}
+
+
+class ConsultaService:
+    @staticmethod
+    def filtrar_por_fecha(fecha):
+        return (Jugada.objects.filter(fecha=fecha).select_related('promotor', 'usuario')
+                .order_by('hora', 'id_jugada'))
+
+    @staticmethod
+    def filtrar_por_promotor(queryset, codigo):
+        return queryset.filter(promotor_id=codigo)
+
+    @staticmethod
+    def buscar_por_numero(queryset, numero):
+        return queryset.filter(numero=numero)
+
+    @classmethod
+    def consultar(cls, fecha, codigo_promotor=None, numero=None):
+        base = cls.filtrar_por_fecha(fecha)
+        jugadas = base
+        if codigo_promotor:
+            jugadas = cls.filtrar_por_promotor(jugadas, codigo_promotor)
+        if numero:
+            jugadas = cls.buscar_por_numero(jugadas, numero)
+        resumen = jugadas.aggregate(cantidad=Count('id_jugada'), total=Sum('valor'))
+        filas = (jugadas.order_by().values('promotor_id', 'promotor__nombre', 'promotor__tipo')
+                 .annotate(cantidad=Count('id_jugada'), total=Sum('valor'))
+                 .order_by('-total', 'promotor_id'))
+        desglose = [{'promotor': str(Promotor(codigo=f['promotor_id'], nombre=f['promotor__nombre'],
+                                              tipo=f['promotor__tipo'])),
+                     'cantidad': f['cantidad'], 'total': f['total']} for f in filas]
+        total = resumen['total'] or 0
+        datos = {'jugadas': jugadas, 'cantidad': resumen['cantidad'], 'total': total,
+                 'desglose': desglose, 'hay_datos_fecha': base.exists()}
+        if numero:
+            datos.update(numero=numero, total_parcial=total)
+        return datos
