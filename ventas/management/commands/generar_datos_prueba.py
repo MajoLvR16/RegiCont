@@ -6,7 +6,7 @@ from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 from django.utils import timezone
 
-from ventas.models import Jugada, Loteria, Promotor, TotalNumero, Usuario
+from ventas.models import Jugada, Promotor, TotalNumero, Usuario
 from ventas.templatetags.formato import formato_pesos
 
 CANTIDAD = 2535
@@ -35,10 +35,9 @@ class Command(BaseCommand):
             fecha = datetime.strptime(fecha, '%Y-%m-%d').date() if fecha else timezone.localdate()
         except ValueError:
             raise CommandError('Fecha inválida, use AAAA-MM-DD')
-        loterias = list(Loteria.objects.filter(activa=True))
         promotores = list(Promotor.objects.all())
         usuarios = list(Usuario.objects.filter(is_active=True, rol=Usuario.Rol.OPERADOR))
-        if not (loterias and promotores and usuarios):
+        if not (promotores and usuarios):
             raise CommandError('Ejecute primero cargar_datos_iniciales')
 
         rnd = random.Random(semilla)
@@ -49,7 +48,7 @@ class Command(BaseCommand):
             fecha=fecha, hora=(base + timedelta(seconds=s)).time(),
             numero=rnd.choice(frecuentes) if rnd.random() < 0.7 else numero_al_azar(rnd),
             valor=rnd.choices(VALORES, PESOS)[0],
-            loteria=rnd.choice(loterias), promotor=rnd.choice(promotores), usuario=rnd.choice(usuarios),
+            promotor=rnd.choice(promotores), usuario=rnd.choice(usuarios),
         ) for s in segundos]
 
         if modo == 'sabado':
