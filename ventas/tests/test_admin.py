@@ -18,7 +18,7 @@ class AdminBase(TestCase):
 class AccesoTests(AdminBase):
     def test_operador_no_entra(self):
         self.client.force_login(self.ope)
-        for url in ('/admin/', '/admin/ventas/promotor/', '/admin/ventas/usuario/'):
+        for url in ('/admin/', '/admin/ventas/usuario/'):
             r = self.client.get(url)
             self.assertEqual(r.status_code, 302, url)
             self.assertIn('/admin/login/', r['Location'])
@@ -42,10 +42,10 @@ class AccesoTests(AdminBase):
     def test_portada(self):
         self.client.force_login(self.adm)
         r = self.client.get('/admin/')
-        for t in ('Promotores', 'Usuarios', 'img/logo.png', 'RegiCont · Administración',
+        for t in ('Usuarios', 'img/logo.png', 'RegiCont · Administración',
                   'Sesión de', 'Volver a RegiCont'):
             self.assertContains(r, t)
-        for t in ('Jugadas', 'Totales', 'Grupos', 'Loterías'):
+        for t in ('Promotores', 'Jugadas', 'Totales', 'Grupos', 'Loterías'):
             self.assertNotContains(r, t)
 
     def test_jugadas_y_totales_solo_lectura(self):
@@ -57,9 +57,8 @@ class AccesoTests(AdminBase):
 
     def test_sin_borrar(self):
         self.client.force_login(self.adm)
-        for url in ('/admin/ventas/promotor/502/delete/',
-                    f'/admin/ventas/usuario/{self.ope.pk}/delete/'):
-            self.assertEqual(self.client.get(url).status_code, 403, url)
+        url = f'/admin/ventas/usuario/{self.ope.pk}/delete/'
+        self.assertEqual(self.client.get(url).status_code, 403, url)
 
 
 class FormulariosTests(AdminBase):
@@ -100,24 +99,16 @@ class FormulariosTests(AdminBase):
                          {'password1': 'Otra-clave-77', 'password2': 'Otra-clave-77'})
         self.assertTrue(Usuario.objects.get(pk=u.pk).has_usable_password())
 
-    def test_crear_promotor(self):
-        r = self.client.post('/admin/ventas/promotor/add/', {
-            'codigo': '777', 'nombre': 'Luis', 'tipo': 'Vendedor', 'parametro_comision': '5'}, follow=True)
-        self.assertContains(r, 'Listo: se guardó promotor «777».')
-
     def test_mensajes_sin_fue(self):
-        pr = '/admin/ventas/promotor/'
         us = '/admin/ventas/usuario/'
         flujos = [
-            (pr + 'add/', {'codigo': '778', 'nombre': 'Eva', 'tipo': 'Vendedor', 'parametro_comision': '1'}),
-            (pr + '502/change/', {'nombre': 'Ana María', 'tipo': 'Promotor', 'parametro_comision': '2'}),
             (us + 'add/', {'username': 'nuevo', 'password1': 'Clave-segura-93',
                            'password2': 'Clave-segura-93', 'rol': 'Operador'}),
             (f'{us}{self.ope.pk}/change/', {'username': 'arturo', 'first_name': 'Arturo', 'rol': 'Operador',
                                             'is_active': 'on'}),
             (f'{us}{self.ope.pk}/password/', {'password1': 'Otra-clave-77', 'password2': 'Otra-clave-77'}),
         ]
-        for modelo in (Promotor, Usuario):
+        for modelo in (Usuario,):
             ma = admin.site._registry[modelo]
             self.assertFalse(ma.list_editable, ma)
             self.assertFalse(ma.actions, ma)

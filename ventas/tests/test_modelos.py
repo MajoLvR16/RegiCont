@@ -97,13 +97,8 @@ class AdminTests(TestCase):
 
     def test_administrador(self):
         self.client.force_login(self.adm)
-        self.assertEqual(self.client.get('/admin/ventas/promotor/').status_code, 200)
         self.assertEqual(self.client.get('/admin/ventas/usuario/add/').status_code, 200)
         self.assertEqual(self.client.get(f'/admin/ventas/usuario/{self.ope.pk}/change/').status_code, 200)
-        r = self.client.post('/admin/ventas/promotor/add/', {
-            'codigo': '700', 'nombre': 'Cruz Roja', 'tipo': 'Promotor', 'parametro_comision': '0'})
-        self.assertEqual(r.status_code, 302)
-        self.assertTrue(Promotor.objects.filter(codigo='700').exists())
         r = self.client.post('/admin/ventas/usuario/add/', {
             'username': 'nuevo', 'password1': 'Clave-segura-93', 'password2': 'Clave-segura-93',
             'rol': 'Operador'})

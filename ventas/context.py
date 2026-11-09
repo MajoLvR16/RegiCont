@@ -6,7 +6,7 @@ _ITEMS = [
     ('totales', 'Totales', 'ventas:totales'),
     ('consulta', 'Consulta', 'ventas:consulta'),
     ('cubiertas', 'Cubiertas', 'ventas:cubiertas'),
-    ('promotores', 'Promotores', None),
+    ('promotores', 'Promotores', 'ventas:promotores'),
     ('cierre', 'Cierre diario', None),
 ]
 
@@ -16,9 +16,9 @@ def navegacion(request):
     user = getattr(request, 'user', None)
     menu = []
     for clave, etiqueta, url_name in _ITEMS:
-        # Cubiertas solo aparece a quien tiene el permiso.
-        if clave == 'cubiertas' and not (user is not None and user.is_authenticated
-                                         and user.tiene_permiso('cubiertas')):
+        # Cubiertas y Promotores solo aparecen a quien tiene el permiso.
+        if clave in ('cubiertas', 'promotores') and not (user is not None and user.is_authenticated
+                                         and user.tiene_permiso(clave)):
             continue
         url = None
         if url_name:

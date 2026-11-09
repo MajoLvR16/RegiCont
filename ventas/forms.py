@@ -39,7 +39,7 @@ class FormularioConsulta(forms.Form):
         self.fields['fecha'].widget.attrs['max'] = hoy
         self.fields['fecha'].initial = hoy
         self.fields['promotor'].choices = [('', 'Todos los promotores')] + [
-            (p.codigo, str(p)) for p in Promotor.objects.all()]
+            (p.codigo, str(p) + ('' if p.activo else ' (inactivo)')) for p in Promotor.objects.all()]
 
 
 class FormularioFechaCubierta(forms.Form):
@@ -51,3 +51,13 @@ class FormularioFechaCubierta(forms.Form):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['fecha'].widget.attrs['max'] = timezone.localdate().isoformat()
+
+
+class FormularioPromotor(forms.Form):
+    """Solo presentación; la validación de negocio está en PromotorService."""
+    codigo = forms.CharField(label='Código', required=False, max_length=10, widget=forms.TextInput(
+        attrs={'inputmode': 'numeric', 'maxlength': 10, 'autocomplete': 'off'}))
+    nombre = forms.CharField(label='Nombre', required=False, max_length=100)
+    tipo = forms.ChoiceField(label='Tipo', required=False, choices=Promotor.Tipo.choices)
+    parametro_comision = forms.CharField(label='Parámetro de comisión', required=False, widget=forms.TextInput(
+        attrs={'inputmode': 'decimal', 'autocomplete': 'off', 'placeholder': '2,50'}))

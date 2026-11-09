@@ -17,6 +17,8 @@ class Promotor(models.Model):
     tipo = models.CharField('tipo', max_length=20, choices=Tipo.choices, default=Tipo.PROMOTOR)
     # Solo se almacena; el sistema no calcula comisiones.
     parametro_comision = models.DecimalField('parámetro de comisión', max_digits=5, decimal_places=2, default=0)
+    # Un promotor inactivo no se puede digitar, pero conserva sus jugadas.
+    activo = models.BooleanField('activo', default=True)
 
     class Meta:
         db_table = 'promotor'
@@ -40,7 +42,7 @@ class Usuario(AbstractUser):
     rol = models.CharField('rol', max_length=20, choices=Rol.choices, default=Rol.OPERADOR)
 
     PERMISOS = {
-        Rol.ADMINISTRADOR: {'digitar', 'ver_totales', 'consultar', 'cubiertas', 'administrar'},
+        Rol.ADMINISTRADOR: {'digitar', 'ver_totales', 'consultar', 'cubiertas', 'promotores', 'administrar'},
         Rol.OPERADOR: {'digitar', 'ver_totales', 'consultar'},
     }
 

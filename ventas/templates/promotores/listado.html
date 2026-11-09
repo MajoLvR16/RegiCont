@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block titulo %}Promotores · RegiCont{% endblock %}
+{% block menu_activo %}promotores{% endblock %}
+{% block titulo_pagina %}Promotores{% endblock %}
+{% block subtitulo_pagina %}Consulte, registre y active o desactive promotores, vendedores y oficinas.{% endblock %}
+{% block contenido %}
+<section class="tarjeta">
+  <form method="get" action="{% url 'ventas:promotores' %}" class="barra-promotores">
+    <div class="campo">
+      <label for="id_q">Buscar por código o nombre</label>
+      <input type="text" name="q" id="id_q" value="{{ q }}" autocomplete="off">
+    </div>
+    <button type="submit" class="btn btn--primario">Buscar</button>
+    {% if q %}<a href="{% url 'ventas:promotores' %}" class="enlace-limpiar">Limpiar</a>{% endif %}
+    <a href="{% url 'ventas:nuevo_promotor' %}" class="btn btn--primario">Nuevo promotor</a>
+  </form>
+</section>
+<section class="tarjeta tabla-ancha">
+  <table class="tabla">
+    <thead><tr><th>Código</th><th>Nombre</th><th>Tipo</th><th class="num">Parámetro de comisión</th><th>Estado</th><th>Acciones</th></tr></thead>
+    <tbody>
+      {% for p in promotores %}<tr>
+        <td><strong>{{ p.codigo }}</strong></td><td>{{ p.nombre }}</td><td>{{ p.tipo }}</td>
+        <td class="num">{{ p.parametro_comision|floatformat:"2" }}</td>
+        <td>{% if p.activo %}<span class="estado--activo">Activo</span>{% else %}<span class="estado--inactivo">Inactivo</span>{% endif %}</td>
+        <td>
+          <a href="{% url 'ventas:editar_promotor' p.codigo %}">Editar</a>
+          <form method="post" action="{% url 'ventas:estado_promotor' p.codigo %}" class="form-en-linea">
+            {% csrf_token %}
+            <input type="hidden" name="activo" value="{% if p.activo %}0{% else %}1{% endif %}">
+            <button type="submit" class="btn-enlace">{% if p.activo %}Desactivar{% else %}Activar{% endif %}</button>
+          </form>
+        </td>
+      </tr>{% empty %}<tr><td colspan="6" class="texto-gris">{% if q %}Sin resultados para la búsqueda{% else %}Aún no hay promotores registrados{% endif %}</td></tr>{% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endblock %}

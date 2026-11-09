@@ -28,7 +28,7 @@ class JugadaController:
             ctx = super().get_context_data(**kwargs)
             ctx.update(
                 fecha_jornada=timezone.localdate(),
-                promotores=Promotor.objects.all(),
+                promotores=Promotor.objects.filter(activo=True),
                 jugadas=RegistroJugadaService.jugadas_de_hoy(settings.FILAS_JUGADAS_HOY),
                 filas=settings.FILAS_JUGADAS_HOY,
                 valores_rapidos=VALORES_RAPIDOS,
