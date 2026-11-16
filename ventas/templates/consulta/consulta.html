@@ -64,11 +64,11 @@
       {% for j in pagina %}<tr><td>{{ j.hora|time:"H:i:s" }}</td><td><strong>{{ j.numero }}</strong></td><td class="num">{{ j.valor|pesos }}</td><td>{{ j.promotor }}</td><td>{{ j.usuario.get_username }}</td></tr>{% endfor %}
     </tbody>
   </table>
-  <div class="paginacion">
+  {% if pagina.paginator.num_pages > 1 %}<div class="paginacion">
     {% if pagina.has_previous %}<a href="?{% if filtros %}{{ filtros }}&amp;{% endif %}pagina={{ pagina.previous_page_number }}">Anterior</a>{% else %}<span class="texto-gris">Anterior</span>{% endif %}
     <span class="texto-gris">Página {{ pagina.number }} de {{ pagina.paginator.num_pages }}</span>
     {% if pagina.has_next %}<a href="?{% if filtros %}{{ filtros }}&amp;{% endif %}pagina={{ pagina.next_page_number }}">Siguiente</a>{% else %}<span class="texto-gris">Siguiente</span>{% endif %}
-  </div>
+  </div>{% endif %}
 </section>
 {% endif %}
 {% endif %}

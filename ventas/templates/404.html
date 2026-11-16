@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block titulo %}Página no encontrada · RegiCont{% endblock %}
+{% block titulo_pagina %}Página no encontrada{% endblock %}
+{% block contenido %}
+<section class="tarjeta">
+  <p>La página que busca no existe o fue movida.</p>
+  <p><a href="{% url 'ventas:inicio' %}">Volver al inicio</a></p>
+</section>
+{% endblock %}

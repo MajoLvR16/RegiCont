@@ -185,7 +185,7 @@
   var rapidos = document.querySelectorAll('.valor-rapido');
   for (var r = 0; r < rapidos.length; r++) {
     rapidos[r].addEventListener('click', function () {
-      el.valor.value = this.getAttribute('data-valor');
+      el.valor.value = '$' + this.getAttribute('data-valor').replace(/\B(?=(\d{3})+(?!\d))/g, '.');
       marcar('valor', '');
       guardarBorrador();
       el.valor.focus();

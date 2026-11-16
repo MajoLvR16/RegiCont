@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block titulo %}No tiene permiso para acceder a esta página · RegiCont{% endblock %}
+{% block titulo_pagina %}No tiene permiso para acceder a esta página{% endblock %}
+{% block contenido %}
+<section class="tarjeta">
+  <p>Su rol no tiene acceso a esta sección. Si cree que es un error, consulte con el administrador.</p>
+  <p><a href="{% url 'ventas:inicio' %}">Volver al inicio</a></p>
+</section>
+{% endblock %}

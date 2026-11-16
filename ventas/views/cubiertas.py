@@ -1,6 +1,8 @@
 import re
 
 from django.contrib import messages
+from django.db.models import IntegerField
+from django.db.models.functions import Cast
 from django.http import Http404
 from django.shortcuts import redirect
 from django.urls import reverse
@@ -37,7 +39,8 @@ class CubiertaController:
                 if tope:
                     valores['monto'] = tope.monto_tope
             ctx.update(valores=valores, errores=self.errores_tope or {},
-                       topes=TopeCubierta.objects.select_related('usuario'))
+                       topes=TopeCubierta.objects.select_related('usuario')
+                       .order_by(Cast('numero', IntegerField()), 'numero'))
             return ctx
 
     class RegistrarTope(Pantalla):
