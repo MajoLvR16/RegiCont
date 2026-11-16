@@ -188,6 +188,16 @@ class ImpresionTests(Base):
         self.assertContains(r, 'Volver')
         self.assertNotContains(r, 'class="lateral"')
 
+    def test_segunda_tabla_solo_con_mas_de_15_numeros(self):
+        for k in range(8):
+            self.jug(D8, f'{1000 + k}', 1000, self.p1)
+        r = self.ver('/cierre/imprimir/', fecha=D8.isoformat())
+        self.assertContains(r, '<table', count=2)  # promotores + una de números
+        for k in range(8, 20):
+            self.jug(D8, f'{1000 + k}', 1000, self.p1)
+        r = self.ver('/cierre/imprimir/', fecha=D8.isoformat())
+        self.assertContains(r, '<table', count=3)
+
 
 @override_settings(DEBUG=True)
 class RendimientoTests(Base):
