@@ -187,3 +187,19 @@ class RendimientoTests(TestCase):
             self.assertEqual(r.status_code, 200)
             self.assertLess(dt, 2)
             self.assertLessEqual(len(q), 12)
+
+
+class PaginadorOcultoTests(Base):
+    def test_una_pagina_sin_controles(self):
+        self.jug(D9, '123', 500, self.p1)
+        r = self.ir(fecha='2026-11-09')
+        for t in ('Anterior', 'Siguiente', 'Página 1 de'):
+            self.assertNotContains(r, t)
+
+    def test_tres_paginas_con_controles(self):
+        Jugada.objects.bulk_create([
+            Jugada(fecha=D9, hora=datetime.time(9, 0), numero='123', valor=500, promotor=self.p1, usuario=self.op)
+            for _ in range(250)])
+        r = self.ir(fecha='2026-11-09')
+        for t in ('Anterior', 'Siguiente', 'Página 1 de 3'):
+            self.assertContains(r, t)
