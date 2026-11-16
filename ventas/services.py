@@ -180,6 +180,11 @@ class CubiertaService:
                 'supera': tope is not None and recaudado > tope}
 
 
+def _texto_excel(valor):
+    # Fórmula de texto ="0742": Excel conserva ceros a la izquierda y no reinterpreta fechas.
+    return f'="{valor}"'
+
+
 class CierreService:
     TOP_NUMEROS = 30
 
@@ -207,23 +212,22 @@ class CierreService:
     def generar_csv(informe, generado_por, generado_en):
         buf = io.StringIO()
         w = csv.writer(buf, delimiter=';')
-        w.writerow(['Informe de cierre diario', informe['fecha'].isoformat()])
+        w.writerow(['Informe de cierre diario', _texto_excel(informe['fecha'].isoformat())])
         w.writerow(['Conexión Siglo XXI – RegiCont'])
-        w.writerow(['Generado', generado_en.strftime('%d/%m/%Y %H:%M'), 'por', generado_por])
+        w.writerow(['Generado', _texto_excel(generado_en.strftime('%d/%m/%Y %H:%M')), 'por', generado_por])
         w.writerow([])
         w.writerows([['Concepto', 'Valor'], ['Total recaudado (COP)', informe['total_recaudado']],
                      ['Jugadas', informe['cantidad_jugadas']], ['Números distintos', informe['cantidad_numeros']]])
         w.writerow([])
         w.writerow(['Totales por promotor'])
         w.writerow(['Código', 'Nombre', 'Jugadas', 'Monto (COP)'])
-        w.writerows([p['codigo'], p['nombre'], p['jugadas'], p['monto']] for p in informe['promotores'])
+        w.writerows([_texto_excel(p['codigo']), p['nombre'], p['jugadas'], p['monto']] for p in informe['promotores'])
         t = informe['total_promotores']
         w.writerow(['Total', '', t['jugadas'], t['monto']])
         w.writerow([])
         w.writerow(['Números de mayor recaudo'])
         w.writerow(['Puesto', 'Número', 'Jugadas', 'Monto (COP)'])
-        # El número va como fórmula de texto ="0742" para que Excel conserve los ceros a la izquierda.
-        w.writerows([n['puesto'], f'="{n["numero"]}"', n['jugadas'], n['monto']] for n in informe['numeros_top'])
+        w.writerows([n['puesto'], _texto_excel(n['numero']), n['jugadas'], n['monto']] for n in informe['numeros_top'])
         return buf.getvalue()
 
 

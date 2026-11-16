@@ -138,13 +138,13 @@ class CsvTests(Base):
         self.assertEqual(r['Content-Disposition'], 'attachment; filename="cierre_2026-11-08.csv"')
         self.assertTrue(r.content.startswith(b'\xef\xbb\xbf'))
         texto = r.content.decode('utf-8')
-        self.assertTrue(texto.startswith('\ufeffInforme de cierre diario;2026-11-08'))
+        self.assertTrue(texto.startswith('\ufeffInforme de cierre diario;"=""2026-11-08"""'))
         lineas = texto.splitlines()
         self.assertEqual(lineas[1], 'Conexión Siglo XXI – RegiCont')
-        self.assertRegex(lineas[2], r'^Generado;\d\d/\d\d/\d{4} \d\d:\d\d;por;Ana Pérez$')
+        self.assertRegex(lineas[2], r'^Generado;"=""\d\d/\d\d/\d{4} \d\d:\d\d""";por;Ana Pérez$')
         for esperado in ('Concepto;Valor', 'Total recaudado (COP);17000', 'Jugadas;4', 'Números distintos;2',
-                         'Totales por promotor', 'Código;Nombre;Jugadas;Monto (COP)', '501;Ana;3;3000',
-                         '001;Oficina;1;14000', 'Total;;4;17000', 'Números de mayor recaudo',
+                         'Totales por promotor', 'Código;Nombre;Jugadas;Monto (COP)', '"=""501""";Ana;3;3000',
+                         '"=""001""";Oficina;1;14000', 'Total;;4;17000', 'Números de mayor recaudo',
                          'Puesto;Número;Jugadas;Monto (COP)', '1;"=""1721""";1;14000', '2;"=""0742""";3;3000'):
             self.assertIn(esperado, lineas)
         self.assertNotIn('$', texto)
@@ -157,6 +157,32 @@ class CsvTests(Base):
         fila = next(csv.reader([linea], delimiter=';'))
         self.assertEqual(fila, ['2', '="0742"', '3', '3000'])
         self.assertEqual(int(fila[3]), 3000)
+
+
+class CsvTextoExcelTests(Base):
+    def setUp(self):
+        self.p093 = Promotor.objects.create(codigo='093', nombre='Eva')
+        self.jug(D8, '0742', 1000, self.p093, 2)
+        self.jug(D8, '1721', 14000, self.of)
+        self.texto = self.ver('/cierre/exportar/', fecha=D8.isoformat()).content.decode('utf-8')
+        self.filas = list(csv.reader(StringIO(self.texto.lstrip('\ufeff')), delimiter=';'))
+
+    def test_codigo_de_promotor_como_texto(self):
+        for codigo, nombre, jugadas, monto in (('093', 'Eva', 2, 2000), ('001', 'Oficina', 1, 14000)):
+            self.assertIn(f'"=""{codigo}""";{nombre};{jugadas};{monto}', self.texto)
+            self.assertIn([f'="{codigo}"', nombre, str(jugadas), str(monto)], self.filas)
+
+    def test_montos_jugadas_y_puestos_siguen_enteros(self):
+        for fila in self.filas:
+            if fila[:1] in (['="093"'], ['="001"'], ['1'], ['2']):
+                self.assertTrue(all(c.isdigit() for c in fila[2:]), fila)
+        self.assertIn(['Total recaudado (COP)', '16000'], self.filas)
+        self.assertIn(['Total', '', '3', '16000'], self.filas)
+        self.assertIn(['1', '="1721"', '1', '14000'], self.filas)
+
+    def test_fechas_como_texto(self):
+        self.assertEqual(self.filas[0], ['Informe de cierre diario', '="2026-11-08"'])
+        self.assertRegex(self.filas[2][1], r'^="\d\d/\d\d/\d{4} \d\d:\d\d"$')
 
 
 class FechaTests(Base):
