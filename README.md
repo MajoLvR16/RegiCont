@@ -8,6 +8,8 @@ Documentación de la Iteración 1 (alcance, trazabilidad, decisiones y pruebas d
 
 Documentación de la Iteración 2 (Consulta, Cubiertas, Promotores, retiro de la lotería, pruebas y rendimiento): [docs/ITERACION2.md](docs/ITERACION2.md).
 
+Documentación de la Iteración 3 (Cierre diario, correcciones de la revisión de capturas, pruebas y rendimiento): [docs/ITERACION3.md](docs/ITERACION3.md).
+
 ## Instalación en Windows 11
 
 1. Cree el entorno virtual:
@@ -62,8 +64,8 @@ python manage.py runserver
 
 | Rol | Acceso |
 |---|---|
-| Administrador | Digitación, Totales, Consulta, Cubiertas, Promotores y Administración de Django (`/admin/`, solo Usuarios) |
-| Operador | Digitación, Totales y Consulta |
+| Administrador | Digitación, Totales, Consulta, Cubiertas, Promotores, Cierre diario y Administración de Django (`/admin/`, solo Usuarios) |
+| Operador | Digitación, Totales, Consulta y Cierre diario |
 
 El rol lo asigna el Administrador desde Administración, en Usuarios. Usuarios iniciales: `doctor` (Administrador), `arturo` y `custodia` (Operadores).
 
@@ -73,6 +75,14 @@ El rol lo asigna el Administrador desde Administración, en Usuarios. Usuarios i
 2. Seleccione Nuevo promotor. La comisión es un parámetro editable que solo se almacena. Los promotores no se borran: se desactivan, y un promotor inactivo no se puede digitar.
 
 El comando inicial carga siete promotores y tres usuarios.
+
+## Cierre diario
+
+1. Abra Cierre diario en el menú (`/cierre/`), elija la fecha (no puede ser futura) y seleccione Generar informe.
+2. Imprimir abre el informe en tamaño carta y el diálogo de impresión; para obtener un PDF, elija "Guardar como PDF" como impresora.
+3. Exportar CSV descarga `cierre_AAAA-MM-DD.csv` (UTF-8, separador punto y coma), que se abre con Excel.
+
+Si la fecha no tiene jugadas, se muestra un aviso y no se puede imprimir ni exportar.
 
 ## Datos de prueba de rendimiento
 
