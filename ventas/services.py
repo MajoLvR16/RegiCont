@@ -205,7 +205,6 @@ class CierreService:
 
     @staticmethod
     def generar_csv(informe, generado_por, generado_en):
-        # ponytail: los ceros a la izquierda (0742) van como texto; Excel puede quitarlos al abrir.
         buf = io.StringIO()
         w = csv.writer(buf, delimiter=';')
         w.writerow(['Informe de cierre diario', informe['fecha'].isoformat()])
@@ -223,7 +222,8 @@ class CierreService:
         w.writerow([])
         w.writerow(['Números de mayor recaudo'])
         w.writerow(['Puesto', 'Número', 'Jugadas', 'Monto (COP)'])
-        w.writerows([n['puesto'], n['numero'], n['jugadas'], n['monto']] for n in informe['numeros_top'])
+        # El número va como fórmula de texto ="0742" para que Excel conserve los ceros a la izquierda.
+        w.writerows([n['puesto'], f'="{n["numero"]}"', n['jugadas'], n['monto']] for n in informe['numeros_top'])
         return buf.getvalue()
 
 

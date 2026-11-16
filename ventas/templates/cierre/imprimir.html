@@ -58,7 +58,7 @@
   </table>
   <h2>Números de mayor recaudo</h2>
   <div class="dos-columnas">
-    {% for mitad in "ab" %}
+    {% for mitad in "ab" %}{% if mitad == "a" or informe.numeros_top|length > 15 %}
     <div>
       <table>
         <thead><tr><th>Puesto</th><th>Número</th><th class="num">Jugadas</th><th class="num">Monto</th></tr></thead>
@@ -67,7 +67,7 @@
         </tbody>
       </table>
     </div>
-    {% endfor %}
+    {% endif %}{% endfor %}
   </div>
   <script>window.print();</script>
   {% endif %}
