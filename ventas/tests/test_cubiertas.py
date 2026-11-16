@@ -283,3 +283,65 @@ class OrdenTopesTests(Base):
         r = self.ver()
         self.assertEqual([t.numero for t in r.context['topes']],
                          ['318', '0742', '742', '1028', '1111', '1721'])
+
+
+class PaginacionTests(Base):
+    def crear(self, cantidad):
+        TotalNumero.objects.bulk_create(
+            TotalNumero(fecha=D9, numero=f'{1000 + i}', monto_acumulado=100000 - i * 10) for i in range(cantidad))
+
+    def test_tres_paginas_y_puesto_global(self):
+        self.crear(250)
+        r = self.ver(fecha='2026-11-09')
+        self.assertEqual(len(r.context['pagina']), 100)
+        self.assertContains(r, 'Página 1 de 3')
+        r = self.ver(fecha='2026-11-09', pagina=2)
+        self.assertEqual(r.context['pagina'][0]['puesto'], 101)
+        self.assertContains(r, 'Página 2 de 3')
+        self.assertEqual(len(self.ver(fecha='2026-11-09', pagina=3).context['pagina']), 50)
+
+    def test_enlaces_conservan_fecha(self):
+        self.crear(250)
+        r = self.ver(fecha='2026-11-09', pagina=2)
+        self.assertContains(r, 'href="?fecha=2026-11-09&amp;pagina=1">Anterior')
+        self.assertContains(r, 'href="?fecha=2026-11-09&amp;pagina=3">Siguiente')
+        self.assertNotContains(r, 'pagina=2&amp;')
+
+    def test_pagina_invalida_sin_error(self):
+        self.crear(250)
+        r = self.ver(fecha='2026-11-09', pagina=999)
+        self.assertEqual((r.status_code, r.context['pagina'].number), (200, 3))
+        r = self.ver(fecha='2026-11-09', pagina='abc')
+        self.assertEqual((r.status_code, r.context['pagina'].number), (200, 1))
+
+    def test_aviso_y_lista_cuentan_numero_en_otra_pagina(self):
+        self.crear(250)
+        self.tope('1249', 100)   # el último puesto, página 3
+        self.tope('1100', 100)   # puesto 101
+        r = self.ver(fecha='2026-11-09')   # página 1: no están las filas, pero sí el aviso
+        self.assertContains(r, '<strong>2</strong> números superan su tope')
+        self.assertContains(r, 'Superan su tope: <a href="/cubiertas/1100/?fecha=2026-11-09"><strong>1100</strong></a>, '
+                               '<a href="/cubiertas/1249/?fecha=2026-11-09"><strong>1249</strong></a>')
+        self.assertNotContains(r, 'class="fila--supera"')
+        self.assertContains(self.ver(fecha='2026-11-09', pagina=3), 'class="fila--supera"', count=1)
+
+    def test_sin_superan_no_hay_lista(self):
+        self.crear(3)
+        self.assertNotContains(self.ver(fecha='2026-11-09'), 'Superan su tope')
+
+    def test_una_pagina_sin_paginacion(self):
+        self.crear(100)
+        r = self.ver(fecha='2026-11-09')
+        self.assertNotContains(r, 'Siguiente')
+        self.assertNotContains(r, 'Página 1 de')
+
+    @override_settings(DEBUG=True)
+    def test_rendimiento_sabado(self):
+        call_command('cargar_datos_iniciales', stdout=StringIO())
+        call_command('generar_datos_prueba', '--modo', 'sabado', stdout=StringIO())
+        self.client.force_login(self.adm)
+        for pagina in (1, 2):
+            t = time.perf_counter()
+            r = self.client.get('/cubiertas/', {'pagina': pagina})
+            self.assertEqual(r.status_code, 200)
+            self.assertLess(time.perf_counter() - t, 2)

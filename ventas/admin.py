@@ -3,10 +3,12 @@ from django.contrib.admin.forms import AdminAuthenticationForm
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.forms import AdminPasswordChangeForm, AdminUserCreationForm
 from django.contrib.auth.models import Group
+from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.urls import reverse
 from django.utils.html import format_html
 
 from .models import Jugada, TotalNumero, Usuario
+from .templatetags.formato import formato_pesos
 
 
 def tiene_acceso_admin(request):
@@ -22,6 +24,10 @@ class LoginAdminForm(AdminAuthenticationForm):
         **AdminAuthenticationForm.error_messages,
         'invalid_login': 'Usuario o contraseña incorrectos, o su rol no tiene acceso a la administración.',
     }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['username'].label = 'Usuario'
 
 
 admin.site.has_permission = tiene_acceso_admin
@@ -93,6 +99,8 @@ class TextosClarosMixin:
         vista = request.resolver_match.url_name if request.resolver_match else ''
         if level == messages.SUCCESS and obj is not None and vista.endswith(('_add', '_change')):
             message = f'Listo: se guardó {obj._meta.verbose_name} «{obj}».'
+        if level == messages.WARNING and message[:1].islower():
+            message = message[0].upper() + message[1:]   # «usuario con el ID…» empieza con el nombre del modelo
         super().message_user(request, message, level, extra_tags, fail_silently)
 
 
@@ -151,6 +159,14 @@ class UsuarioAdmin(SinBorrarMixin, SoloAdministradorMixin, TextosClarosMixin, Us
             'La persona usará la nueva contraseña la próxima vez que ingrese.',
             reverse('admin:auth_user_password_change', args=[obj.pk]))
 
+    def get_form(self, request, obj=None, **kwargs):
+        form = super().get_form(request, obj, **kwargs)
+        campo = form.base_fields.get('username')
+        if campo:   # El mensaje de Django en español trae una errata ("Introduza").
+            campo.validators = [v for v in campo.validators if not isinstance(v, UnicodeUsernameValidator)] + [
+                UnicodeUsernameValidator(message='Digite un usuario válido: solo letras, números y @ . + - _')]
+        return form
+
     def get_readonly_fields(self, request, obj=None):
         if obj is None:
             return ()
@@ -161,17 +177,31 @@ class UsuarioAdmin(SinBorrarMixin, SoloAdministradorMixin, TextosClarosMixin, Us
 
 @admin.register(Jugada)
 class JugadaAdmin(SoloLecturaMixin, admin.ModelAdmin):
-    list_display = ('fecha', 'hora', 'numero', 'promotor', 'valor', 'usuario')
+    list_display = ('fecha', 'hora_completa', 'numero', 'promotor', 'valor_pesos', 'usuario')
+    fields = ('fecha', 'hora_completa', 'numero', 'valor_pesos', 'promotor', 'usuario')
+    readonly_fields = ('hora_completa', 'valor_pesos')
     list_filter = ('fecha',)
     search_fields = ('numero',)
     date_hierarchy = 'fecha'
     list_select_related = ('promotor', 'usuario')
 
+    @admin.display(description='Hora', ordering='hora')
+    def hora_completa(self, obj):
+        return obj.hora.strftime('%H:%M:%S')
+
+    @admin.display(description='Valor', ordering='valor')
+    def valor_pesos(self, obj):
+        return formato_pesos(obj.valor)
+
 
 @admin.register(TotalNumero)
 class TotalNumeroAdmin(SoloLecturaMixin, admin.ModelAdmin):
-    list_display = ('fecha', 'numero', 'monto_acumulado')
+    list_display = ('fecha', 'numero', 'monto_pesos')
     ordering = ('-fecha', '-monto_acumulado')
+
+    @admin.display(description='Monto acumulado', ordering='monto_acumulado')
+    def monto_pesos(self, obj):
+        return formato_pesos(obj.monto_acumulado)
 
 
 admin.site.site_header = 'RegiCont · Administración'

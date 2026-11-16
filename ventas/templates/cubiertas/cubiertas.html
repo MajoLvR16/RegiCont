@@ -22,12 +22,13 @@
   <div class="tarjeta__cabecera"><h2>Jornada del {{ fecha|date:"j \d\e F \d\e Y" }}</h2></div>
   <p>Total recaudado: <span class="cifra-resumen">{{ total_recaudado|pesos }}</span></p>
   <p>{% if cantidad_superan == 0 %}Ningún número supera su tope{% elif cantidad_superan == 1 %}<strong>1</strong> número supera su tope{% else %}<strong>{{ cantidad_superan }}</strong> números superan su tope{% endif %}</p>
+  {% if superan %}<p>Superan su tope: {% for n in superan %}<a href="{% url 'ventas:detalle_cubierta' n %}?fecha={{ fecha|date:'Y-m-d' }}"><strong>{{ n }}</strong></a>{% if not forloop.last %}, {% endif %}{% endfor %}</p>{% endif %}
 </section>
 <section class="tarjeta tabla-ancha">
   <table class="tabla">
     <thead><tr><th>Puesto</th><th>Número</th><th class="num">Recaudado</th><th class="num">Tope</th><th class="num">Diferencia</th><th>Estado</th></tr></thead>
     <tbody>
-      {% for f in filas %}<tr{% if f.supera %} class="fila--supera"{% endif %}>
+      {% for f in pagina %}<tr{% if f.supera %} class="fila--supera"{% endif %}>
         <td>{{ f.puesto }}</td>
         <td><a href="{% url 'ventas:detalle_cubierta' f.numero %}?fecha={{ fecha|date:'Y-m-d' }}"><strong>{{ f.numero }}</strong></a></td>
         <td class="num">{{ f.recaudado|pesos }}</td>
@@ -37,6 +38,11 @@
       </tr>{% empty %}<tr><td colspan="6" class="texto-gris">Sin datos para ordenar</td></tr>{% endfor %}
     </tbody>
   </table>
+  {% if pagina.paginator.num_pages > 1 %}<div class="paginacion">
+    {% if pagina.has_previous %}<a href="?{% if filtros %}{{ filtros }}&amp;{% endif %}pagina={{ pagina.previous_page_number }}">Anterior</a>{% else %}<span class="texto-gris">Anterior</span>{% endif %}
+    <span class="texto-gris">Página {{ pagina.number }} de {{ pagina.paginator.num_pages }}</span>
+    {% if pagina.has_next %}<a href="?{% if filtros %}{{ filtros }}&amp;{% endif %}pagina={{ pagina.next_page_number }}">Siguiente</a>{% else %}<span class="texto-gris">Siguiente</span>{% endif %}
+  </div>{% endif %}
 </section>
 {% endif %}
 <section class="tarjeta">
