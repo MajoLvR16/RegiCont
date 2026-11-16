@@ -1,3 +1,5 @@
+import csv
+import io
 import re
 import uuid
 from decimal import Decimal, InvalidOperation
@@ -176,6 +178,53 @@ class CubiertaService:
         return {'promotores': promotores, 'recaudado': recaudado, 'tope': tope,
                 'diferencia': None if tope is None else tope - recaudado,
                 'supera': tope is not None and recaudado > tope}
+
+
+class CierreService:
+    TOP_NUMEROS = 30
+
+    @classmethod
+    def informe(cls, fecha):
+        jugadas = Jugada.objects.filter(fecha=fecha).order_by()
+        resumen = jugadas.aggregate(total=Sum('valor'), cantidad=Count('id_jugada'),
+                                    numeros=Count('numero', distinct=True))
+        filas = (jugadas.values('promotor_id', 'promotor__nombre', 'promotor__tipo')
+                 .annotate(jugadas=Count('id_jugada'), monto=Sum('valor'))
+                 .order_by('-monto', 'promotor_id'))
+        promotores = [{'codigo': f['promotor_id'], 'nombre': f['promotor__nombre'],
+                       'texto': str(Promotor(codigo=f['promotor_id'], nombre=f['promotor__nombre'],
+                                             tipo=f['promotor__tipo'])),
+                       'jugadas': f['jugadas'], 'monto': f['monto']} for f in filas]
+        top = (jugadas.values('numero').annotate(monto=Sum('valor'), jugadas=Count('id_jugada'))
+               .order_by('-monto', 'numero')[:cls.TOP_NUMEROS])
+        return {'fecha': fecha, 'total_recaudado': resumen['total'] or 0,
+                'cantidad_jugadas': resumen['cantidad'], 'cantidad_numeros': resumen['numeros'],
+                'hay_datos': resumen['cantidad'] > 0, 'promotores': promotores,
+                'total_promotores': {'jugadas': resumen['cantidad'], 'monto': resumen['total'] or 0},
+                'numeros_top': [{'puesto': i, **n} for i, n in enumerate(top, 1)]}
+
+    @staticmethod
+    def generar_csv(informe, generado_por, generado_en):
+        # ponytail: los ceros a la izquierda (0742) van como texto; Excel puede quitarlos al abrir.
+        buf = io.StringIO()
+        w = csv.writer(buf, delimiter=';')
+        w.writerow(['Informe de cierre diario', informe['fecha'].isoformat()])
+        w.writerow(['Conexión Siglo XXI – RegiCont'])
+        w.writerow(['Generado', generado_en.strftime('%d/%m/%Y %H:%M'), 'por', generado_por])
+        w.writerow([])
+        w.writerows([['Concepto', 'Valor'], ['Total recaudado (COP)', informe['total_recaudado']],
+                     ['Jugadas', informe['cantidad_jugadas']], ['Números distintos', informe['cantidad_numeros']]])
+        w.writerow([])
+        w.writerow(['Totales por promotor'])
+        w.writerow(['Código', 'Nombre', 'Jugadas', 'Monto (COP)'])
+        w.writerows([p['codigo'], p['nombre'], p['jugadas'], p['monto']] for p in informe['promotores'])
+        t = informe['total_promotores']
+        w.writerow(['Total', '', t['jugadas'], t['monto']])
+        w.writerow([])
+        w.writerow(['Números de mayor recaudo'])
+        w.writerow(['Puesto', 'Número', 'Jugadas', 'Monto (COP)'])
+        w.writerows([n['puesto'], n['numero'], n['jugadas'], n['monto']] for n in informe['numeros_top'])
+        return buf.getvalue()
 
 
 class PromotorService:

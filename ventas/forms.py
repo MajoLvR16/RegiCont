@@ -53,6 +53,25 @@ class FormularioFechaCubierta(forms.Form):
         self.fields['fecha'].widget.attrs['max'] = timezone.localdate().isoformat()
 
 
+class FormularioCierre(forms.Form):
+    fecha = forms.DateField(
+        label='Fecha',
+        error_messages={'required': 'Seleccione una fecha válida', 'invalid': 'Seleccione una fecha válida'},
+        widget=forms.DateInput(attrs={'type': 'date'}, format='%Y-%m-%d'))
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        hoy = timezone.localdate().isoformat()
+        self.fields['fecha'].widget.attrs['max'] = hoy
+        self.fields['fecha'].initial = hoy
+
+    def clean_fecha(self):
+        fecha = self.cleaned_data['fecha']
+        if fecha > timezone.localdate():
+            raise forms.ValidationError('La fecha no puede ser posterior a hoy')
+        return fecha
+
+
 class FormularioPromotor(forms.Form):
     """Solo presentación; la validación de negocio está en PromotorService."""
     codigo = forms.CharField(label='Código', required=False, max_length=10, widget=forms.TextInput(

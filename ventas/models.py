@@ -42,8 +42,8 @@ class Usuario(AbstractUser):
     rol = models.CharField('rol', max_length=20, choices=Rol.choices, default=Rol.OPERADOR)
 
     PERMISOS = {
-        Rol.ADMINISTRADOR: {'digitar', 'ver_totales', 'consultar', 'cubiertas', 'promotores', 'administrar'},
-        Rol.OPERADOR: {'digitar', 'ver_totales', 'consultar'},
+        Rol.ADMINISTRADOR: {'digitar', 'ver_totales', 'consultar', 'cubiertas', 'promotores', 'cierre', 'administrar'},
+        Rol.OPERADOR: {'digitar', 'ver_totales', 'consultar', 'cierre'},
     }
 
     class Meta:
