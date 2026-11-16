@@ -274,3 +274,12 @@ class RendimientoTests(Base):
             self.assertEqual(r.status_code, 200)
             self.assertLess(dur, 2)
             self.assertLessEqual(len(c), 12, url)
+
+
+class OrdenTopesTests(Base):
+    def test_topes_ordenan_por_valor(self):
+        for n in ('1721', '318', '1111', '1028', '742', '0742'):
+            self.tope(n, 100)
+        r = self.ver()
+        self.assertEqual([t.numero for t in r.context['topes']],
+                         ['318', '0742', '742', '1028', '1111', '1721'])
