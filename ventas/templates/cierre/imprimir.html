@@ -1,0 +1,75 @@
+{% load formato %}<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Informe de cierre diario · {{ informe.fecha|date:"Y-m-d" }}</title>
+  <style>
+    @page { size: letter; margin: 12mm; }
+    * { box-sizing: border-box; }
+    body { font-family: Arial, Helvetica, sans-serif; font-size: 10.5pt; color: #000; margin: 0; padding: 12px; }
+    h1 { font-size: 15pt; margin: 0; }
+    h2 { font-size: 11.5pt; margin: 10px 0 4px; }
+    .marca { font-size: 10pt; color: #444; }
+    .meta { font-size: 9.5pt; color: #333; margin-bottom: 6px; }
+    .resumen { display: flex; gap: 24px; margin: 6px 0; }
+    .resumen strong { font-size: 12pt; }
+    table { border-collapse: collapse; width: 100%; font-size: 10pt; }
+    th, td { border: 1px solid #888; padding: 1px 5px; text-align: left; line-height: 1.25; }
+    th { background: #eee; }
+    .num { text-align: right; }
+    tfoot td { font-weight: 700; background: #f4f4f4; }
+    .dos-columnas { display: flex; gap: 12px; align-items: flex-start; }
+    .dos-columnas > div { flex: 1; }
+    .barra { margin-bottom: 10px; }
+    .barra button, .barra a { font-size: 11pt; margin-right: 10px; }
+    .aviso { padding: 8px 12px; border: 1px solid #888; background: #f4f4f4; }
+    tr { break-inside: avoid; }
+    @media print {
+      .no-imprimir { display: none; }
+      body { padding: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="barra no-imprimir">
+    {% if informe.hay_datos %}<button type="button" onclick="window.print()">Imprimir</button>{% endif %}
+    <a href="{% url 'ventas:cierre' %}?fecha={{ fecha_iso }}">Volver</a>
+  </div>
+  <div class="marca">Conexión Siglo XXI – RegiCont</div>
+  <h1>Informe de cierre diario</h1>
+  <div>Jornada del {{ informe.fecha|date:"j \d\e F \d\e Y" }}</div>
+  <div class="meta">Generado el {{ generado_en|date:"j \d\e F \d\e Y, H:i" }} por {{ generado_por }}</div>
+  {% if not informe.hay_datos %}
+  <p class="aviso" role="status">No hay datos para generar el informe de la fecha seleccionada</p>
+  {% else %}
+  <div class="resumen">
+    <div>Total recaudado<br><strong>{{ informe.total_recaudado|pesos }}</strong></div>
+    <div>Jugadas<br><strong>{{ informe.cantidad_jugadas }}</strong></div>
+    <div>Números distintos<br><strong>{{ informe.cantidad_numeros }}</strong></div>
+  </div>
+  <h2>Totales por promotor</h2>
+  <table>
+    <thead><tr><th>Código</th><th>Nombre</th><th class="num">Jugadas</th><th class="num">Monto</th></tr></thead>
+    <tbody>
+      {% for p in informe.promotores %}<tr><td>{{ p.codigo }}</td><td>{{ p.nombre }}</td><td class="num">{{ p.jugadas }}</td><td class="num">{{ p.monto|pesos }}</td></tr>{% endfor %}
+    </tbody>
+    <tfoot><tr><td colspan="2">Total</td><td class="num">{{ informe.total_promotores.jugadas }}</td><td class="num">{{ informe.total_promotores.monto|pesos }}</td></tr></tfoot>
+  </table>
+  <h2>Números de mayor recaudo</h2>
+  <div class="dos-columnas">
+    {% for mitad in "ab" %}
+    <div>
+      <table>
+        <thead><tr><th>Puesto</th><th>Número</th><th class="num">Jugadas</th><th class="num">Monto</th></tr></thead>
+        <tbody>
+          {% for n in informe.numeros_top %}{% if forloop.counter0 < 15 and mitad == "a" or forloop.counter0 >= 15 and mitad == "b" %}<tr><td>{{ n.puesto }}</td><td><strong>{{ n.numero }}</strong></td><td class="num">{{ n.jugadas }}</td><td class="num">{{ n.monto|pesos }}</td></tr>{% endif %}{% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% endfor %}
+  </div>
+  <script>window.print();</script>
+  {% endif %}
+</body>
+</html>

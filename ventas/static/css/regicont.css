@@ -50,6 +50,7 @@ body[data-menu="totales"] a[data-clave="totales"],
 body[data-menu="consulta"] a[data-clave="consulta"],
 body[data-menu="cubiertas"] a[data-clave="cubiertas"],
 body[data-menu="promotores"] a[data-clave="promotores"],
+body[data-menu="cierre"] a[data-clave="cierre"],
 body[data-menu="administracion"] a[data-clave="administracion"] {
   background: var(--azul-claro); color: var(--azul-oscuro); font-weight: 700;
 }

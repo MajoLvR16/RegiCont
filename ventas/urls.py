@@ -2,6 +2,7 @@ from django.urls import path
 from django.views.generic import RedirectView
 
 from ventas.views.acceso import AccesoController
+from ventas.views.cierre import CierreController
 from ventas.views.consulta import ConsultaController
 from ventas.views.cubiertas import CubiertaController
 from ventas.views.jugadas import JugadaController
@@ -18,6 +19,9 @@ urlpatterns = [
     path('digitacion/jugadas/', JugadaController.Registrar.as_view(), name='registrar_jugada'),
     path('digitacion/jugadas/hoy/', JugadaController.ListarHoy.as_view(), name='jugadas_hoy'),
     path('consulta/', ConsultaController.Pantalla.as_view(), name='consulta'),
+    path('cierre/', CierreController.Pantalla.as_view(), name='cierre'),
+    path('cierre/imprimir/', CierreController.Imprimir.as_view(), name='imprimir_cierre'),
+    path('cierre/exportar/', CierreController.ExportarCsv.as_view(), name='exportar_cierre'),
     path('cubiertas/', CubiertaController.Pantalla.as_view(), name='cubiertas'),
     path('cubiertas/topes/', CubiertaController.RegistrarTope.as_view(), name='registrar_tope'),
     path('cubiertas/<str:numero>/', CubiertaController.Detalle.as_view(), name='detalle_cubierta'),
