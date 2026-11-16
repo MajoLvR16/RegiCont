@@ -131,3 +131,11 @@ class FormulariosTests(AdminBase):
         self.assertContains(r, '>Rol:<')
         self.assertContains(r, '>Activo:<')
         self.assertNotContains(r, '>is_active')
+
+
+class AyudaRolTests(TestCase):
+    def test_ayuda_del_rol(self):
+        adm = Usuario.objects.create_user('jefe', password='clave-123', rol=R.ADMINISTRADOR)
+        self.client.force_login(adm)
+        r = self.client.get('/admin/ventas/usuario/add/')
+        self.assertContains(r, 'Operador: Digitación, Totales, Consulta y Cierre diario.')

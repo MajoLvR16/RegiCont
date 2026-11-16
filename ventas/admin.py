@@ -140,7 +140,7 @@ class UsuarioAdmin(SinBorrarMixin, SoloAdministradorMixin, TextosClarosMixin, Us
         'username': 'Con este nombre ingresa al sistema, por ejemplo arturo. '
                     'Solo letras, números y @ . + - _. No use espacios.',
         'first_name': 'Nombre de la persona, por ejemplo Arturo.',
-        'rol': 'Administrador: también entra a esta administración. Operador: solo Digitación y Totales.',
+        'rol': 'Administrador: todas las pantallas y esta administración. Operador: Digitación, Totales, Consulta y Cierre diario.',
         'is_active': 'Desmárquelo para impedir que la persona ingrese, sin perder sus jugadas registradas.',
     }
 
