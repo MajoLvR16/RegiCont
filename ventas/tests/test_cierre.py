@@ -1,3 +1,4 @@
+import csv
 import datetime
 import time
 from io import StringIO
@@ -144,10 +145,18 @@ class CsvTests(Base):
         for esperado in ('Concepto;Valor', 'Total recaudado (COP);17000', 'Jugadas;4', 'Números distintos;2',
                          'Totales por promotor', 'Código;Nombre;Jugadas;Monto (COP)', '501;Ana;3;3000',
                          '001;Oficina;1;14000', 'Total;;4;17000', 'Números de mayor recaudo',
-                         'Puesto;Número;Jugadas;Monto (COP)', '1;1721;1;14000', '2;0742;3;3000'):
+                         'Puesto;Número;Jugadas;Monto (COP)', '1;"=""1721""";1;14000', '2;"=""0742""";3;3000'):
             self.assertIn(esperado, lineas)
         self.assertNotIn('$', texto)
         self.assertNotIn('14.000', texto)
+
+    def test_numero_como_formula_de_texto(self):
+        texto = self.ver('/cierre/exportar/', fecha=D8.isoformat()).content.decode('utf-8')
+        linea = next(l for l in texto.splitlines() if '0742' in l)
+        self.assertIn('"=""0742"""', linea)
+        fila = next(csv.reader([linea], delimiter=';'))
+        self.assertEqual(fila, ['2', '="0742"', '3', '3000'])
+        self.assertEqual(int(fila[3]), 3000)
 
 
 class FechaTests(Base):
