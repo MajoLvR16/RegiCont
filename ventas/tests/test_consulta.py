@@ -203,3 +203,13 @@ class PaginadorOcultoTests(Base):
         r = self.ir(fecha='2026-11-09')
         for t in ('Anterior', 'Siguiente', 'Página 1 de 3'):
             self.assertContains(r, t)
+
+
+class ConcordanciaTests(Base):
+    def test_singular_y_plural(self):
+        self.jug(D9, '123', 500, self.p1)
+        r = self.ir(fecha='2026-11-09')
+        self.assertContains(r, '1 jugada<')
+        self.assertNotContains(r, '1 jugadas')
+        self.jug(D9, '124', 500, self.p1)
+        self.assertContains(self.ir(fecha='2026-11-09'), '2 jugadas<')

@@ -92,6 +92,9 @@ class Jugada(models.Model):
             models.CheckConstraint(condition=Q(valor__gte=500), name='jugada_valor_minimo'),
         ]
 
+    def __str__(self):
+        return f'Jugada {self.numero} del {self.fecha:%d/%m/%Y}'
+
     def validar(self):
         try:
             self.full_clean(validate_constraints=False)
@@ -114,6 +117,9 @@ class TotalNumero(models.Model):
         constraints = [
             models.UniqueConstraint(fields=['fecha', 'numero'], name='total_numero_fecha_numero_unico'),
         ]
+
+    def __str__(self):
+        return f'Total del {self.numero} el {self.fecha:%d/%m/%Y}'
 
     def acumular(self, valor):
         # F() suma en la BD, evita perder sumas con concurrencia.

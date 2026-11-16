@@ -139,3 +139,37 @@ class AyudaRolTests(TestCase):
         self.client.force_login(adm)
         r = self.client.get('/admin/ventas/usuario/add/')
         self.assertContains(r, 'Operador: Digitación, Totales, Consulta y Cierre diario.')
+
+
+class TextosAdminTests(AdminBase):
+    def setUp(self):
+        self.client.force_login(self.adm)
+        self.j = Jugada.objects.create(fecha='2026-11-09', hora='09:05:07', numero='0742', valor=14000000,
+                                       promotor=self.pro, usuario=self.ope)
+
+    def test_jugada_con_pesos_hora_completa_y_nombre(self):
+        r = self.client.get('/admin/ventas/jugada/')
+        self.assertContains(r, '$14.000.000')
+        self.assertContains(r, '09:05:07')
+        r = self.client.get(f'/admin/ventas/jugada/{self.j.pk}/change/')
+        self.assertContains(r, 'Jugada 0742 del 09/11/2026')
+        self.assertNotContains(r, 'object (')
+
+    def test_total_por_numero_con_pesos(self):
+        from ventas.models import TotalNumero
+        TotalNumero.objects.create(fecha='2026-11-09', numero='0742', monto_acumulado=2500000)
+        self.assertContains(self.client.get('/admin/ventas/totalnumero/'), '$2.500.000')
+
+    def test_usuario_invalido_sin_errata(self):
+        r = self.client.post('/admin/ventas/usuario/add/', {
+            'username': 'ana maria', 'rol': 'Operador', 'password1': 'Clave-segura-77', 'password2': 'Clave-segura-77'})
+        self.assertContains(r, 'Digite un usuario válido')
+        self.assertNotContains(r, 'Introduza')
+
+    def test_usuario_inexistente_empieza_con_mayuscula(self):
+        r = self.client.get('/admin/ventas/usuario/9999/change/', follow=True)
+        self.assertContains(r, 'Usuario con el ID')
+
+    def test_login_admin_dice_usuario(self):
+        self.client.logout()
+        self.assertContains(self.client.get('/admin/login/'), 'Usuario:')
