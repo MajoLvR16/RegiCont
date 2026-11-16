@@ -1,6 +1,7 @@
 import re
 
 from django.contrib import messages
+from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.db.models import IntegerField
 from django.db.models.functions import Cast
 from django.http import Http404
@@ -14,6 +15,8 @@ from ventas.models import TopeCubierta
 from ventas.permisos import RequierePermisoMixin
 from ventas.services import CubiertaService, ErrorValidacion
 from ventas.templatetags.formato import formato_pesos
+
+POR_PAGINA = 100
 
 
 class CubiertaController:
@@ -31,7 +34,19 @@ class CubiertaController:
             ctx = super().get_context_data(**kwargs, form=form)
             if form.is_valid():
                 fecha = form.cleaned_data['fecha']
-                ctx.update(CubiertaService.reporte(fecha), fecha=fecha, consultado=True)
+                r = CubiertaService.reporte(fecha)
+                paginador = Paginator(r['filas'], POR_PAGINA)
+                try:
+                    pagina = paginador.page(self.request.GET.get('pagina'))
+                except PageNotAnInteger:
+                    pagina = paginador.page(1)
+                except EmptyPage:
+                    pagina = paginador.page(paginador.num_pages)
+                filtros = self.request.GET.copy()
+                filtros.pop('pagina', None)
+                # Las filas ya vienen ordenadas por recaudado; los que superan su tope se listan aparte.
+                ctx.update(r, fecha=fecha, consultado=True, pagina=pagina, filtros=filtros.urlencode(),
+                           superan=[f['numero'] for f in r['filas'] if f['supera']])
             valores = self.valores_tope
             if valores is None:
                 valores = {'numero': self.request.GET.get('editar', '')[:4], 'monto': ''}
