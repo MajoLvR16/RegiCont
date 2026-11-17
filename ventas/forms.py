@@ -3,12 +3,13 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.core.validators import RegexValidator
 from django.utils import timezone
 
+from ventas.bloqueo import BloqueoIngresoMixin
 from ventas.models import Promotor
 
 _ERROR = 'Usuario o contraseña incorrectos'
 
 
-class FormularioIngreso(AuthenticationForm):
+class FormularioIngreso(BloqueoIngresoMixin, AuthenticationForm):
     error_messages = {'invalid_login': _ERROR, 'inactive': _ERROR}
 
     def __init__(self, *args, **kwargs):
