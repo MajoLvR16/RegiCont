@@ -1,9 +1,10 @@
-{% load formato %}<!DOCTYPE html>
+{% load formato static %}<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Informe de cierre diario · {{ informe.fecha|date:"Y-m-d" }}</title>
+  <link rel="icon" type="image/png" href="{% static 'img/logo.png' %}">
   <style>
     @page { size: letter; margin: 12mm; }
     * { box-sizing: border-box; }
