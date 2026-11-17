@@ -134,7 +134,7 @@
     }).then(function (r) {
       var tipo = r.headers.get('content-type') || '';
       if (r.redirected || r.status === 403) {
-        mostrarAviso('Su sesión terminó. Vuelva a ingresar; la jugada quedó guardada en este equipo.', false);
+        mostrarAviso('Su sesión expiró, ingrese de nuevo. La jugada quedó guardada en este equipo y se recupera al volver.', false);
         return;
       }
       if (tipo.indexOf('json') < 0) {
