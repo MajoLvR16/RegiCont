@@ -9,5 +9,3 @@ staticfiles/
 htmlcov/
 
 test_db.sqlite3
-
-.claude/
