@@ -108,8 +108,13 @@ python manage.py test
 | `DATABASE_URL` | Base de datos, p. ej. `postgres://usuario:clave@host:5432/regicont` | SQLite `db.sqlite3` |
 | `FILAS_JUGADAS_HOY` | Jugadas recientes mostradas en Digitación | 10 |
 | `REFRESCO_TOTALES_SEGUNDOS` | Segundos entre refrescos de Totales | 7 |
-| `SESSION_COOKIE_SECURE` | Cookie de sesión solo por HTTPS (producción) | `True` |
-| `CSRF_COOKIE_SECURE` | Cookie CSRF solo por HTTPS (producción) | `True` |
+| `SESSION_COOKIE_SECURE` | Cookie de sesión solo por HTTPS (producción) | `False` |
+| `CSRF_COOKIE_SECURE` | Cookie CSRF solo por HTTPS (producción) | `False` |
+| `SECURE_SSL_REDIRECT` | Redirige HTTP a HTTPS (producción) | `False` |
+| `SECURE_HSTS_SECONDS` | Segundos de HSTS (producción) | `0` |
+| `SECURE_HSTS_INCLUDE_SUBDOMAINS` | HSTS para subdominios | `False` |
+| `SECURE_HSTS_PRELOAD` | HSTS con precarga | `False` |
+| `SECURE_PROXY_SSL_HEADER_ACTIVO` | Confiar en `X-Forwarded-Proto` de un proxy inverso | `False` |
 
 ## Producción
 
@@ -130,6 +135,16 @@ python manage.py collectstatic
 ```
 
 Sirva la carpeta `staticfiles/` con el servidor web (en la ruta `/static/`) y ejecute la aplicación con gunicorn (`gunicorn config.wsgi`) detrás de HTTPS.
+
+## Seguridad en el despliegue (HTTPS)
+
+Las opciones de HTTPS vienen desactivadas para que la aplicación funcione antes de tener certificado. Actívelas en este orden:
+
+1. Configure primero HTTPS en el servidor web (certificado incluido). Si un proxy inverso termina el HTTPS, defina `SECURE_PROXY_SSL_HEADER_ACTIVO=True` (el proxy debe enviar `X-Forwarded-Proto`).
+2. Defina `SECURE_SSL_REDIRECT=True`, `SESSION_COOKIE_SECURE=True` y `CSRF_COOKIE_SECURE=True`.
+3. Active HSTS con un valor bajo, `SECURE_HSTS_SECONDS=3600`, y compruebe que todo funciona. Después súbalo a `31536000` (un año). `SECURE_HSTS_INCLUDE_SUBDOMAINS` y `SECURE_HSTS_PRELOAD` solo si todos los subdominios usan HTTPS.
+
+Con todo activado, `python manage.py check --deploy` debe quedar sin advertencias en producción.
 
 ## Estructura
 

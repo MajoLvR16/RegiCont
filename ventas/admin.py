@@ -7,6 +7,7 @@ from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.urls import reverse
 from django.utils.html import format_html
 
+from .bloqueo import BloqueoIngresoMixin
 from .models import Jugada, TotalNumero, Usuario
 from .templatetags.formato import formato_pesos
 
@@ -19,7 +20,7 @@ def tiene_acceso_admin(request):
 
 
 
-class LoginAdminForm(AdminAuthenticationForm):
+class LoginAdminForm(BloqueoIngresoMixin, AdminAuthenticationForm):
     error_messages = {
         **AdminAuthenticationForm.error_messages,
         'invalid_login': 'Usuario o contraseña incorrectos, o su rol no tiene acceso a la administración.',

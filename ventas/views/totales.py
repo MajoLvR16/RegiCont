@@ -6,13 +6,13 @@ from django.views.generic import TemplateView
 
 from ventas.permisos import RequierePermisoMixin
 from ventas.services import ReporteService
-from ventas.templatetags.formato import formato_pesos
+from ventas.templatetags.formato import formato_pesos, formato_puesto
 
 
 def datos_consolidado():
     c = ReporteService.consolidado_por_numero(timezone.localdate())
     return {
-        'filas': [{'puesto': f'{f["puesto"]:02d}', 'numero': f['numero'], 'monto': formato_pesos(f['monto'])}
+        'filas': [{'puesto': formato_puesto(f['puesto']), 'numero': f['numero'], 'monto': formato_pesos(f['monto'])}
                   for f in c['filas']],
         'total': formato_pesos(c['total']),
         'cantidad': c['cantidad'],

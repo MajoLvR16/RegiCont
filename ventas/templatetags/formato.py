@@ -16,3 +16,10 @@ def pesos_con_signo(valor):
 
 
 register.filter('pesos_con_signo', pesos_con_signo)
+
+
+def formato_puesto(valor):
+    return f'{int(valor):02d}'
+
+
+register.filter('puesto', formato_puesto)

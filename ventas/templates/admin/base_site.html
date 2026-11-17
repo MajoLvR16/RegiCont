@@ -5,6 +5,8 @@
 
 {% block dark-mode-vars %}{% endblock %}
 
+{% block extrahead %}{{ block.super }}<link rel="icon" type="image/png" href="{% static 'img/logo.png' %}">{% endblock %}
+
 {% block extrastyle %}{{ block.super }}<link rel="stylesheet" href="{% static 'css/admin_regicont.css' %}">{% endblock %}
 
 {% block branding %}
